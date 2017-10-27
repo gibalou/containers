@@ -64,7 +64,7 @@ static const char* container_for_fileext(const char *fileext);
  ********************************************************************************/
 
 static const char *readers[] =
-{"mp4", "asf", "avi", "mkv", "wav", "flv", "simple", "rawvideo", "mpga", "ps", "rtp", "rtsp", "rcv", "rv9", "qsynth", "binary", 0};
+{"mp4", "asf", "avi", "mkv", "wav", "flv", "simple", "rawvideo", "mpga", "ts", "ps", "rtp", "rtsp", "rcv", "rv9", "qsynth", "binary", 0};
 static const char *writers[] =
 {"mp4", "asf", "avi", "binary", "simple", "rawvideo", 0};
 static const char *metadata_readers[] =
@@ -81,6 +81,7 @@ VC_CONTAINER_STATUS_T mkv_reader_open( VC_CONTAINER_T * );
 VC_CONTAINER_STATUS_T wav_reader_open( VC_CONTAINER_T * );
 VC_CONTAINER_STATUS_T flv_reader_open( VC_CONTAINER_T * );
 VC_CONTAINER_STATUS_T ps_reader_open( VC_CONTAINER_T * );
+VC_CONTAINER_STATUS_T ts_reader_open( VC_CONTAINER_T * );
 VC_CONTAINER_STATUS_T rtp_reader_open( VC_CONTAINER_T * );
 VC_CONTAINER_STATUS_T rtsp_reader_open( VC_CONTAINER_T * );
 VC_CONTAINER_STATUS_T binary_reader_open( VC_CONTAINER_T * );
@@ -109,6 +110,7 @@ static struct
    {"mp4",  &mp4_reader_open},
    {"flv",  &flv_reader_open},
    {"ps",  &ps_reader_open},
+   {"ts",  &ts_reader_open},
    {"binary",  &binary_reader_open},
    {"rtp",  &rtp_reader_open},
    {"rtsp", &rtsp_reader_open},

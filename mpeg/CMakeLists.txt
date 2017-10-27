@@ -6,7 +6,10 @@ set(CMAKE_SHARED_LIBRARY_PREFIX "")
 include_directories (../..)
 
 add_library(reader_ps ${LIBRARY_TYPE} ps_reader.c)
+add_library(reader_ts ${LIBRARY_TYPE} ts_reader.c)
 
 target_link_libraries(reader_ps containers)
+target_link_libraries(reader_ts containers)
 
 install(TARGETS reader_ps DESTINATION ${PLUGIN_DIR})
+install(TARGETS reader_ts DESTINATION ${PLUGIN_DIR})

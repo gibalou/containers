@@ -244,8 +244,10 @@ int32_t vc_container_bits_read_s32_exp_golomb(VC_CONTAINER_BITS_T *bit_stream);
 typedef enum {
    VC_CONTAINER_BITS_LOG_SKIP,
    VC_CONTAINER_BITS_LOG_SKIP_BYTES,
+   VC_CONTAINER_BITS_LOG_U,
    VC_CONTAINER_BITS_LOG_U8,
    VC_CONTAINER_BITS_LOG_U16,
+   VC_CONTAINER_BITS_LOG_U24,
    VC_CONTAINER_BITS_LOG_U32,
    VC_CONTAINER_BITS_LOG_COPY_BYTES,
    VC_CONTAINER_BITS_LOG_REDUCE_BYTES,
@@ -299,18 +301,19 @@ int32_t vc_container_bits_log_s32(VC_CONTAINER_T *p_ctx, uint32_t indent, const 
 
 #ifndef BITS_LOG_INDENT
 # ifndef CONTAINER_HELPER_LOG_INDENT
-#  define BITS_LOG_INDENT(ctx) 0
-# else
-#  define BITS_LOG_INDENT(ctx) ((ctx)->priv->io->module ? CONTAINER_HELPER_LOG_INDENT(a) : 0)
+#  define CONTAINER_HELPER_LOG_INDENT(ctx) 0
 # endif
+# define BITS_LOG_INDENT(ctx) (((ctx) && (ctx)->priv->io->module) ? CONTAINER_HELPER_LOG_INDENT(ctx) : 0)
 #endif
 
 #define BITS_SKIP(ctx, bits, length, txt)             (vc_container_bits_skip(bits, length), vc_container_bits_log(ctx, BITS_LOG_INDENT(ctx), txt, bits, VC_CONTAINER_BITS_LOG_SKIP, length))
 #define BITS_SKIP_BYTES(ctx, bits, length, txt)       (vc_container_bits_skip_bytes(bits, length), vc_container_bits_log(ctx, BITS_LOG_INDENT(ctx), txt, bits, VC_CONTAINER_BITS_LOG_SKIP_BYTES, length))
+#define BITS_SKIP_UINT(ctx, bits, length, txt)        (void)vc_container_bits_log_u32(ctx, BITS_LOG_INDENT(ctx), txt, bits, VC_CONTAINER_BITS_LOG_U, length, vc_container_bits_read_u32(bits, length))
 
 #define BITS_READ_U8(ctx, bits, length, txt)          (uint8_t)vc_container_bits_log_u32(ctx, BITS_LOG_INDENT(ctx), txt, bits, VC_CONTAINER_BITS_LOG_U8, length, vc_container_bits_read_u32(bits, length))
 #define BITS_READ_U16(ctx, bits, length, txt)         (uint16_t)vc_container_bits_log_u32(ctx, BITS_LOG_INDENT(ctx), txt, bits, VC_CONTAINER_BITS_LOG_U16, length, vc_container_bits_read_u32(bits, length))
 #define BITS_READ_U32(ctx, bits, length, txt)         vc_container_bits_log_u32(ctx, BITS_LOG_INDENT(ctx), txt, bits, VC_CONTAINER_BITS_LOG_U32, length, vc_container_bits_read_u32(bits, length))
+#define BITS_READ_UINT(ctx, bits, length, txt)        vc_container_bits_log_u32(ctx, BITS_LOG_INDENT(ctx), txt, bits, VC_CONTAINER_BITS_LOG_U, length, vc_container_bits_read_u32(bits, length))
 
 #define BITS_COPY_BYTES(ctx, bits, length, dst, txt)  (vc_container_bits_copy_bytes(bits, length, dst), vc_container_bits_log(ctx, BITS_LOG_INDENT(ctx), txt, bits, VC_CONTAINER_BITS_LOG_COPY_BYTES, length))
 
@@ -325,10 +328,12 @@ int32_t vc_container_bits_log_s32(VC_CONTAINER_T *p_ctx, uint32_t indent, const 
 
 #define BITS_SKIP(ctx, bits, length, txt)             (VC_CONTAINER_PARAM_UNUSED(ctx), VC_CONTAINER_PARAM_UNUSED(txt), vc_container_bits_skip(bits, length))
 #define BITS_SKIP_BYTES(ctx, bits, length, txt)       (VC_CONTAINER_PARAM_UNUSED(ctx), VC_CONTAINER_PARAM_UNUSED(txt), vc_container_bits_skip_bytes(bits, length))
+#define BITS_SKIP_UINT(ctx, bits, length, txt)        (VC_CONTAINER_PARAM_UNUSED(ctx), VC_CONTAINER_PARAM_UNUSED(txt), vc_container_bits_skip(bits, length))
 
 #define BITS_READ_U8(ctx, bits, length, txt)          (uint8_t)(VC_CONTAINER_PARAM_UNUSED(ctx), VC_CONTAINER_PARAM_UNUSED(txt), vc_container_bits_read_u32(bits, length))
 #define BITS_READ_U16(ctx, bits, length, txt)         (uint16_t)(VC_CONTAINER_PARAM_UNUSED(ctx), VC_CONTAINER_PARAM_UNUSED(txt), vc_container_bits_read_u32(bits, length))
 #define BITS_READ_U32(ctx, bits, length, txt)         (VC_CONTAINER_PARAM_UNUSED(ctx), VC_CONTAINER_PARAM_UNUSED(txt), vc_container_bits_read_u32(bits, length))
+#define BITS_READ_UINT(ctx, bits, length, txt)        (VC_CONTAINER_PARAM_UNUSED(ctx), VC_CONTAINER_PARAM_UNUSED(txt), vc_container_bits_read_u32(bits, length))
 
 #define BITS_COPY_BYTES(ctx, bits, length, dst, txt)  (VC_CONTAINER_PARAM_UNUSED(ctx), VC_CONTAINER_PARAM_UNUSED(txt), vc_container_bits_copy_bytes(bits, length, dst))
 

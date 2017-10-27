@@ -438,6 +438,9 @@ uint32_t vc_container_bits_log_u32(VC_CONTAINER_T *p_ctx,
    const char *valid_str = vc_container_bits_valid_str(bit_stream);
    const char *indent_str = vc_container_bits_indent_str(indent);
 
+   if (op == VC_CONTAINER_BITS_LOG_U)
+      op += MAX(MIN((length + 7) / 8, 4), 1);
+
    switch (op)
    {
    case VC_CONTAINER_BITS_LOG_U8:
@@ -445,6 +448,9 @@ uint32_t vc_container_bits_log_u32(VC_CONTAINER_T *p_ctx,
       break;
    case VC_CONTAINER_BITS_LOG_U16:
       vc_container_log(p_ctx, VC_CONTAINER_LOG_FORMAT, "%s%s: 0x%04x (%u) in %u bits%s", indent_str, txt, value, value, length, valid_str);
+      break;
+   case VC_CONTAINER_BITS_LOG_U24:
+      vc_container_log(p_ctx, VC_CONTAINER_LOG_FORMAT, "%s%s: 0x%06x (%u) in %u bits%s", indent_str, txt, value, value, length, valid_str);
       break;
    case VC_CONTAINER_BITS_LOG_U32:
       vc_container_log(p_ctx, VC_CONTAINER_LOG_FORMAT, "%s%s: 0x%08x (%u) in %u bits%s", indent_str, txt, value, value, length, valid_str);
