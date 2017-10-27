@@ -90,78 +90,6 @@ static const char * vc_container_bits_indent_str(uint32_t length)
 
 #endif /* ENABLE_CONTAINERS_LOG_FORMAT */
 
-/**************************************************************************//**
- * Returns the number of consecutive zero bits in the stream.
- * the zero bits are terminated either by a one bit, or the end of the stream.
- * In the former case, the zero bits and the terminating one bit are removed
- * from the stream.
- * In the latter case, the stream becomes invalid. The stream also becomes
- * invalid if there are not as many bits after the one bit as zero bits before
- * it.
- * If the stream is already or becomes invalid, zero is returned.
- *
- * \pre bit_stream is not NULL.
- *
- * \param bit_stream The bit stream object.
- * \return  The number of consecutive zero bits, or zero if the stream is
- *          invalid.
- */
-static uint32_t vc_container_bits_get_leading_zero_bits( VC_CONTAINER_BITS_T *bit_stream )
-{
-   uint32_t leading_zero_bits;
-   uint32_t bits_left = vc_container_bits_available(bit_stream);
-   uint32_t bits;
-   uint8_t mask, current_byte;
-
-   if (!bits_left)
-      return vc_container_bits_invalidate(bit_stream);
-
-   /* Cache 'bits' field to avoid repeated pointer access */
-   bits = bit_stream->bits;
-   if (bits)
-   {
-      current_byte = *bit_stream->buffer;
-      mask = 1 << (bits - 1);
-   } else {
-      /* Initialize variables to placate the compiler */
-      current_byte = 0;
-      mask = 0;
-   }
-
-   /* Scan for the first one bit, counting the number of zeroes. This gives the
-    * number of further bits after the one that are part of the value. See
-    * section 9.1 of ITU-T REC H.264 201003 for more details. */
-
-   for (leading_zero_bits = 0; leading_zero_bits < bits_left; leading_zero_bits++)
-   {
-      if (!bits)
-      {
-         if (!bit_stream->bytes)
-            return vc_container_bits_invalidate(bit_stream);
-         bit_stream->bytes--;
-         current_byte = *(++bit_stream->buffer);
-         bits = 8;
-         mask = 0x80;
-      }
-
-      bits--;
-      bits_left--;
-      if (current_byte & mask)
-         break;      /* Found the marker bit */
-
-      mask >>= 1;
-   }
-
-   /* Check enough bits are left in the stream for the value. */
-   if (leading_zero_bits > bits_left)
-      return vc_container_bits_invalidate(bit_stream);
-
-   /* Return cached value of bits to the stream */
-   bit_stream->bits = bits;
-   
-   return leading_zero_bits;
-}
-
 /*****************************************************************************
 Functions exported as part of the bit stream API
  *****************************************************************************/
@@ -338,6 +266,63 @@ uint32_t vc_container_bits_read_u32(VC_CONTAINER_BITS_T *bit_stream,
 
    bit_stream->bits = bits;
    return value;
+}
+
+/*****************************************************************************/
+uint32_t vc_container_bits_get_leading_zero_bits( VC_CONTAINER_BITS_T *bit_stream )
+{
+   uint32_t leading_zero_bits;
+   uint32_t bits_left = vc_container_bits_available(bit_stream);
+   uint32_t bits;
+   uint8_t mask, current_byte;
+
+   if (!bits_left)
+      return vc_container_bits_invalidate(bit_stream);
+
+   /* Cache 'bits' field to avoid repeated pointer access */
+   bits = bit_stream->bits;
+   if (bits)
+   {
+      current_byte = *bit_stream->buffer;
+      mask = 1 << (bits - 1);
+   } else {
+      /* Initialize variables to placate the compiler */
+      current_byte = 0;
+      mask = 0;
+   }
+
+   /* Scan for the first one bit, counting the number of zeroes. This gives the
+    * number of further bits after the one that are part of the value. See
+    * section 9.1 of ITU-T REC H.264 201003 for more details. */
+
+   for (leading_zero_bits = 0; leading_zero_bits < bits_left; leading_zero_bits++)
+   {
+      if (!bits)
+      {
+         if (!bit_stream->bytes)
+            return vc_container_bits_invalidate(bit_stream);
+         bit_stream->bytes--;
+         current_byte = *(++bit_stream->buffer);
+         bits = 8;
+         mask = 0x80;
+      }
+
+      bits--;
+      bits_left--;
+      if (current_byte & mask)
+         break;      /* Found the marker bit */
+
+      mask >>= 1;
+   }
+
+   /* Check enough bits are left in the stream for the value. */
+   if (leading_zero_bits > bits_left)
+      return vc_container_bits_invalidate(bit_stream);
+
+   /* Return cached value of bits to the stream */
+   bit_stream->bits = bits;
+
+   return leading_zero_bits;
 }
 
 /*****************************************************************************/

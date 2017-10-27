@@ -76,6 +76,9 @@ typedef struct VC_CONTAINER_PRIVATE_T
    /** Pointer to the private data of the container module in use */
    struct VC_CONTAINER_MODULE_T *module;
 
+   /** Logging verbosity */
+   uint32_t verbosity;
+
    /** Reads a data packet from a container reader.
     * By default, the reader will read whatever packet comes next in the container and update the
     * given \ref VC_CONTAINER_PACKET_T structure with this packet's information.
@@ -152,9 +155,6 @@ typedef struct VC_CONTAINER_PRIVATE_T
    /** Current status of the container (only used for writers to prevent trying to write
     * more data if one of the writes failed) */
    VC_CONTAINER_STATUS_T status;
-
-   /** Logging verbosity */
-   uint32_t verbosity;
 
    /** Uniform Resource Identifier */
    struct VC_URI_PARTS_T *uri;

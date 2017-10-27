@@ -94,29 +94,8 @@ typedef enum
    FRAGMENT_UNIT_HEADER_START = 7,
 } fragment_unit_header_bit_t;
 
-#define MACROBLOCK_WIDTH   16
-#define MACROBLOCK_HEIGHT  16
-
 /** H.264 RTP timestamp clock rate */
 #define H264_TIMESTAMP_CLOCK    90000
-
-typedef enum
-{
-   CHROMA_FORMAT_MONO = 0,
-   CHROMA_FORMAT_YUV_420 = 1,
-   CHROMA_FORMAT_YUV_422 = 2,
-   CHROMA_FORMAT_YUV_444 = 3,
-   CHROMA_FORMAT_YUV_444_PLANAR = 4,
-   CHROMA_FORMAT_RGB = 5,
-} CHROMA_FORMAT_T;
-
-uint32_t chroma_sub_width[] = {
-   1, 2, 2, 1, 1, 1
-};
-
-uint32_t chroma_sub_height[] = {
-   1, 2, 1, 1, 1, 1
-};
 
 /******************************************************************************
 Type definitions
@@ -194,208 +173,6 @@ static uint32_t h264_remove_emulation_prevention_bytes(uint8_t *sprop,
 }
 
 /**************************************************************************//**
- * Skip a scaling list in a bit stream.
- *
- * @param p_ctx                  The container context.
- * @param sprop                  The bit stream containing the scaling list.
- * @param size_of_scaling_list   The size of the scaling list.
- */
-static void h264_skip_scaling_list(VC_CONTAINER_T *p_ctx,
-      VC_CONTAINER_BITS_T *sprop,
-      uint32_t size_of_scaling_list)
-{
-   uint32_t last_scale = 8;
-   uint32_t next_scale = 8;
-   int32_t delta_scale;
-   uint32_t jj;
-
-   /* Algorithm taken from H.264 section 7.3.2.1.1.1 */
-   for (jj = 0; jj < size_of_scaling_list; jj++)
-   {
-      if (next_scale)
-      {
-         delta_scale = BITS_READ_S32_EXP(p_ctx, sprop, "delta_scale");
-         next_scale = (last_scale + delta_scale + 256) & 0xFF;
-
-         if (next_scale)
-            last_scale = next_scale;
-      }
-   }
-}
-
-/**************************************************************************//**
- * Get the chroma format from the bit stream.
- *
- * @param p_ctx   The container context.
- * @param sprop   The bit stream containing the scaling list.
- * @return  The chroma format index.
- */
-static uint32_t h264_get_chroma_format(VC_CONTAINER_T *p_ctx,
-      VC_CONTAINER_BITS_T *sprop)
-{
-   uint32_t chroma_format_idc;
-
-   chroma_format_idc = BITS_READ_U32_EXP(p_ctx, sprop, "chroma_format_idc");
-   if (chroma_format_idc == 3 && BITS_READ_U32(p_ctx, sprop, 1, "separate_colour_plane_flag"))
-      chroma_format_idc = CHROMA_FORMAT_YUV_444_PLANAR;
-
-   BITS_SKIP_EXP(p_ctx, sprop, "bit_depth_luma_minus8");
-   BITS_SKIP_EXP(p_ctx, sprop, "bit_depth_chroma_minus8");
-   BITS_SKIP(p_ctx, sprop, 1, "qpprime_y_zero_transform_bypass_flag");
-
-   if (BITS_READ_U32(p_ctx, sprop, 1, "seq_scaling_matrix_present_flag"))
-   {
-      uint32_t scaling_lists = (chroma_format_idc == 3) ? 12 : 8;
-      uint32_t ii;
-
-      for (ii = 0; ii < scaling_lists; ii++)
-      {
-         if (BITS_READ_U32(p_ctx, sprop, 1, "seq_scaling_list_present_flag"))
-            h264_skip_scaling_list(p_ctx, sprop, (ii < 6) ? 16 : 64);
-      }
-   }
-
-   return chroma_format_idc;
-}
-
-/**************************************************************************//**
- * Decode an H.264 sequence parameter set and update track information.
- *
- * @param p_ctx   The RTP container context.
- * @param track   The track to be updated.
- * @param sprop   The bit stream containing the sequence parameter set.
- * @return  The resulting status of the function.
- */
-static VC_CONTAINER_STATUS_T h264_decode_sequence_parameter_set(VC_CONTAINER_T *p_ctx,
-      VC_CONTAINER_TRACK_T *track,
-      VC_CONTAINER_BITS_T *sprop)
-{
-   VC_CONTAINER_VIDEO_FORMAT_T *video = &track->format->type->video;
-   uint32_t pic_order_cnt_type, chroma_format_idc;
-   uint32_t pic_width_in_mbs_minus1, pic_height_in_map_units_minus1, frame_mbs_only_flag;
-   uint32_t frame_crop_left_offset, frame_crop_right_offset, frame_crop_top_offset, frame_crop_bottom_offset;
-   uint8_t profile_idc;
-
-   /* This structure is defined by H.264 section 7.3.2.1.1 */
-   profile_idc = BITS_READ_U8(p_ctx, sprop, 8, "profile_idc");
-   BITS_SKIP(p_ctx, sprop, 16, "Rest of profile_level_id");
-
-   BITS_READ_U32_EXP(p_ctx, sprop, "seq_parameter_set_id");
-
-   chroma_format_idc = CHROMA_FORMAT_RGB;
-   if (profile_idc == 100 || profile_idc == 110 || profile_idc == 122 ||
-         profile_idc == 244 || profile_idc == 44 || profile_idc == 83 ||
-         profile_idc == 86 || profile_idc == 118 || profile_idc == 128)
-   {
-      chroma_format_idc = h264_get_chroma_format(p_ctx, sprop);
-      if (chroma_format_idc > CHROMA_FORMAT_YUV_444_PLANAR)
-         goto error;
-   }
-
-   BITS_SKIP_EXP(p_ctx, sprop, "log2_max_frame_num_minus4");
-   pic_order_cnt_type = BITS_READ_U32_EXP(p_ctx, sprop, "pic_order_cnt_type");
-   if (pic_order_cnt_type == 0)
-   {
-      BITS_SKIP_EXP(p_ctx, sprop, "log2_max_pic_order_cnt_lsb_minus4");
-   }
-   else if (pic_order_cnt_type == 1)
-   {
-      uint32_t num_ref_frames_in_pic_order_cnt_cycle;
-      uint32_t ii;
-
-      BITS_SKIP(p_ctx, sprop, 1, "delta_pic_order_always_zero_flag");
-      BITS_SKIP_EXP(p_ctx, sprop, "offset_for_non_ref_pic");
-      BITS_SKIP_EXP(p_ctx, sprop, "offset_for_top_to_bottom_field");
-      num_ref_frames_in_pic_order_cnt_cycle = BITS_READ_U32_EXP(p_ctx, sprop, "num_ref_frames_in_pic_order_cnt_cycle");
-
-      for (ii = 0; ii < num_ref_frames_in_pic_order_cnt_cycle; ii++)
-         BITS_SKIP_EXP(p_ctx, sprop, "offset_for_ref_frame");
-   }
-
-   BITS_SKIP_EXP(p_ctx, sprop, "max_num_ref_frames");
-   BITS_SKIP(p_ctx, sprop, 1, "gaps_in_frame_num_value_allowed_flag");
-
-   pic_width_in_mbs_minus1 = BITS_READ_U32_EXP(p_ctx, sprop, "pic_width_in_mbs_minus1");
-   pic_height_in_map_units_minus1 = BITS_READ_U32_EXP(p_ctx, sprop, "pic_height_in_map_units_minus1");
-   frame_mbs_only_flag = BITS_READ_U32(p_ctx, sprop, 1, "frame_mbs_only_flag");
-
-   /* Can now set the overall width and height in pixels */
-   video->width = (pic_width_in_mbs_minus1 + 1) * MACROBLOCK_WIDTH;
-   video->height = (2 - frame_mbs_only_flag) * (pic_height_in_map_units_minus1 + 1) * MACROBLOCK_HEIGHT;
-
-   if (!frame_mbs_only_flag)
-      BITS_SKIP(p_ctx, sprop, 1, "mb_adaptive_frame_field_flag");
-   BITS_SKIP(p_ctx, sprop, 1, "direct_8x8_inference_flag");
-
-   if (BITS_READ_U32(p_ctx, sprop, 1, "frame_cropping_flag"))
-   {
-      /* Visible area is restricted */
-      frame_crop_left_offset = BITS_READ_U32_EXP(p_ctx, sprop, "frame_crop_left_offset");
-      frame_crop_right_offset = BITS_READ_U32_EXP(p_ctx, sprop, "frame_crop_right_offset");
-      frame_crop_top_offset = BITS_READ_U32_EXP(p_ctx, sprop, "frame_crop_top_offset");
-      frame_crop_bottom_offset = BITS_READ_U32_EXP(p_ctx, sprop, "frame_crop_bottom_offset");
-
-      /* Need to adjust offsets for 4:2:0 and 4:2:2 chroma formats and field/frame flag */
-      frame_crop_left_offset *= chroma_sub_width[chroma_format_idc];
-      frame_crop_right_offset *= chroma_sub_width[chroma_format_idc];
-      frame_crop_top_offset *= chroma_sub_height[chroma_format_idc] * (2 - frame_mbs_only_flag);
-      frame_crop_bottom_offset *= chroma_sub_height[chroma_format_idc] * (2 - frame_mbs_only_flag);
-
-      if ((frame_crop_left_offset + frame_crop_right_offset) >= video->width ||
-            (frame_crop_top_offset + frame_crop_bottom_offset) >= video->height)
-      {
-         LOG_ERROR(p_ctx, "H.264: frame crop offsets (%u, %u, %u, %u) larger than frame (%u, %u)",
-               frame_crop_left_offset, frame_crop_right_offset, frame_crop_top_offset,
-               frame_crop_bottom_offset, video->width, video->height);
-         goto error;
-      }
-
-      video->x_offset = frame_crop_left_offset;
-      video->y_offset = frame_crop_top_offset;
-      video->visible_width = video->width - frame_crop_left_offset - frame_crop_right_offset;
-      video->visible_height = video->height - frame_crop_top_offset - frame_crop_bottom_offset;
-   } else {
-      video->visible_width = video->width;
-      video->visible_height = video->height;
-   }
-
-   /* vui_parameters may follow, but these will not be decoded */
-
-   if (!BITS_VALID(p_ctx, sprop))
-      goto error;
-
-   return VC_CONTAINER_SUCCESS;
-
-error:
-   LOG_ERROR(p_ctx, "H.264: sequence_parameter_set failed to decode");
-   return VC_CONTAINER_ERROR_FORMAT_INVALID;
-}
-
-/**************************************************************************//**
- * Decode an H.264 sprop and update track information.
- *
- * @param p_ctx   The RTP container context.
- * @param track   The track to be updated.
- * @param sprop   The bit stream containing the sprop.
- * @return  The resulting status of the function.
- */
-static VC_CONTAINER_STATUS_T h264_decode_sprop(VC_CONTAINER_T *p_ctx,
-      VC_CONTAINER_TRACK_T *track,
-      VC_CONTAINER_BITS_T *sprop)
-{
-   switch (BITS_READ_U32(p_ctx, sprop, 8, "nal_unit_header") & NAL_UNIT_TYPE_MASK)
-   {
-   case NAL_UNIT_SEQUENCE_PARAMETER_SET:
-      return h264_decode_sequence_parameter_set(p_ctx, track, sprop);
-   case NAL_UNIT_PICTURE_PARAMETER_SET:
-      /* Not handled, but valid */
-      return VC_CONTAINER_SUCCESS;
-   default:
-      return VC_CONTAINER_ERROR_FORMAT_INVALID;
-   }
-}
-
-/**************************************************************************//**
  * Decode the sprop parameter sets URI parameter and update track information.
  *
  * @param p_ctx   The RTP container context.
@@ -448,12 +225,11 @@ static VC_CONTAINER_STATUS_T h264_get_sprop_parameter_sets(VC_CONTAINER_T *p_ctx
    track->format->extradata_size = extradata_size;
    sprop = track->priv->extradata;
 
-   /* Now decode the data into the buffer, and validate / use it to fill in format */
+   /* Now decode the data into the buffer */
    set = param.value;
    do {
       uint8_t *next_sprop;
       uint32_t sprop_size;
-      VC_CONTAINER_BITS_T sprop_stream;
 
       comma = strchr(set, ',');
       str_len = comma ? (size_t)(comma - set) : strlen(set);
@@ -476,10 +252,6 @@ static VC_CONTAINER_STATUS_T h264_get_sprop_parameter_sets(VC_CONTAINER_T *p_ctx
 
          /* Need to remove emulation prevention bytes before decoding */
          new_sprop_size = h264_remove_emulation_prevention_bytes(sprop, sprop_size);
-
-         BITS_INIT(p_ctx, &sprop_stream, sprop, new_sprop_size);
-         status = h264_decode_sprop(p_ctx, track, &sprop_stream);
-         if(status != VC_CONTAINER_SUCCESS) return status;
 
          /* If necessary, decode sprop again, to put back the emulation prevention bytes */
          if (new_sprop_size != sprop_size)

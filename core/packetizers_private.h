@@ -45,8 +45,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * store data which shouldn't be exported by the public API. */
 typedef struct VC_PACKETIZER_PRIVATE_T
 {
+   struct VC_CONTAINER_IO_T *io;
+
    /** Pointer to the private data of the packetizer module in use */
    struct VC_PACKETIZER_MODULE_T *module;
+
+   /** Logging verbosity */
+   uint32_t verbosity;
 
    /** Bytestream abstraction layer */
    struct VC_CONTAINER_BYTESTREAM_T stream;

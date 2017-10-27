@@ -33,9 +33,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "containers/core/containers_common.h"
 #include "containers/core/containers_logging.h"
 #include "containers/core/containers_utils.h"
+#include "containers/core/containers_io.h"
 
 /** List of registered packetizers. */
 static VC_PACKETIZER_REGISTRY_ENTRY_T *registry;
+
+static struct VC_CONTAINER_IO_T fake_io = {
+  (struct VC_CONTAINER_IO_PRIVATE_T *)1,     (struct VC_CONTAINER_IO_MODULE_T *)1};
 
 /*****************************************************************************/
 void vc_packetizer_register(VC_PACKETIZER_REGISTRY_ENTRY_T *entry)
@@ -81,6 +85,9 @@ VC_PACKETIZER_T *vc_packetizer_open( VC_CONTAINER_ES_FORMAT_T *in,
    memset(p_ctx, 0, sizeof(*p_ctx) + sizeof(*p_ctx->priv));
    p_ctx->priv = (VC_PACKETIZER_PRIVATE_T *)(p_ctx + 1);
    bytestream_init( &p_ctx->priv->stream );
+
+   p_ctx->priv->io = &fake_io;
+   p_ctx->priv->verbosity = vc_container_log_get_default_verbosity();
 
    p_ctx->in = vc_container_format_create(in->extradata_size);
    if(!p_ctx->in) { status = VC_CONTAINER_ERROR_OUT_OF_MEMORY; goto error; }

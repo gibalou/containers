@@ -187,6 +187,22 @@ void vc_container_bits_copy_bytes(VC_CONTAINER_BITS_T *bit_stream, uint32_t byte
  */
 uint32_t vc_container_bits_read_u32(VC_CONTAINER_BITS_T *bit_stream, uint32_t value_bits);
 
+/** Returns the number of consecutive zero bits in the stream.
+ * the zero bits are terminated either by a one bit, or the end of the stream.
+ * In the former case, the zero bits and the terminating one bit are removed
+ * from the stream.
+ * In the latter case, the stream becomes invalid. The stream also becomes
+ * invalid if there are not as many bits after the one bit as zero bits before
+ * it.
+ * If the stream is already or becomes invalid, zero is returned.
+ *
+ * \pre bit_stream is not NULL.
+ *
+ * \param bit_stream The bit stream object.
+ * \return  The number of consecutive zero bits, or zero if the stream is invalid.
+ */
+uint32_t vc_container_bits_get_leading_zero_bits(VC_CONTAINER_BITS_T *bit_stream);
+
 /** Skips the next Exp-Golomb value in the stream.
  * See section 9.1 of ITU-T REC H.264 201003 for details.
  * If there are not enough bits in the stream to complete an Exp-Golomb value,
@@ -324,6 +340,8 @@ int32_t vc_container_bits_log_s32(VC_CONTAINER_T *p_ctx, uint32_t indent, const 
 #define BITS_READ_S32_EXP(ctx, bits, txt)             vc_container_bits_log_s32(ctx, BITS_LOG_INDENT(ctx), txt, bits, VC_CONTAINER_BITS_LOG_EG_S32, 0, vc_container_bits_read_s32_exp_golomb(bits))
 #define BITS_READ_U32_EXP(ctx, bits, txt)             vc_container_bits_log_u32(ctx, BITS_LOG_INDENT(ctx), txt, bits, VC_CONTAINER_BITS_LOG_EG_U32, 0, vc_container_bits_read_u32_exp_golomb(bits))
 
+#define BITS_READ_U32_EXP_K_ORDER(ctx, bits, order, txt) vc_container_bits_log_u32(ctx, BITS_LOG_INDENT(ctx), txt, bits, VC_CONTAINER_BITS_LOG_EG_U32, 0, (((vc_container_bits_read_u32_exp_golomb(bits)+1) << order)|vc_container_bits_read_u32(bits, order))-(1<<order))
+
 #else  /* ENABLE_CONTAINERS_LOG_FORMAT */
 
 #define BITS_SKIP(ctx, bits, length, txt)             (VC_CONTAINER_PARAM_UNUSED(ctx), VC_CONTAINER_PARAM_UNUSED(txt), vc_container_bits_skip(bits, length))
@@ -343,6 +361,8 @@ int32_t vc_container_bits_log_s32(VC_CONTAINER_T *p_ctx, uint32_t indent, const 
 
 #define BITS_READ_S32_EXP(ctx, bits, txt)             (VC_CONTAINER_PARAM_UNUSED(ctx), VC_CONTAINER_PARAM_UNUSED(txt), vc_container_bits_read_s32_exp_golomb(bits))
 #define BITS_READ_U32_EXP(ctx, bits, txt)             (VC_CONTAINER_PARAM_UNUSED(ctx), VC_CONTAINER_PARAM_UNUSED(txt), vc_container_bits_read_u32_exp_golomb(bits))
+
+#define BITS_READ_U32_EXP_K_ORDER(ctx, bits, order, txt) (VC_CONTAINER_PARAM_UNUSED(ctx), VC_CONTAINER_PARAM_UNUSED(txt), (((vc_container_bits_read_u32_exp_golomb(bits)+1) << order)|vc_container_bits_read_u32(bits, order))-(1<<order))
 
 #endif /* ENABLE_CONTAINERS_LOG_FORMAT */
 

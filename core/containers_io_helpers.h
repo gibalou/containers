@@ -611,8 +611,12 @@ STATIC_INLINE VC_CONTAINER_STATUS_T vc_container_io_write_le_uint64(VC_CONTAINER
 # define _WRITE_U64(ctx, v) vc_container_io_write_le_uint64((ctx)->priv->io, v)
 #endif
 
-#ifndef CONTAINER_HELPER_LOG_INDENT
-# define CONTAINER_HELPER_LOG_INDENT(a) 0
+#ifndef HELPER_LOG_INDENT
+# ifndef CONTAINER_HELPER_LOG_INDENT
+#  define HELPER_LOG_INDENT(ctx) 0
+# else
+#  define HELPER_LOG_INDENT(ctx) ((ctx)->priv->io->module ? CONTAINER_HELPER_LOG_INDENT(ctx) : 0)
+# endif
 #endif
 
 #ifdef CONTAINER_IS_BIG_ENDIAN
@@ -646,27 +650,27 @@ STATIC_INLINE VC_CONTAINER_STATUS_T vc_container_io_write_le_uint64(VC_CONTAINER
 #define SKIP_STRING(ctx,sz,n) SKIP_BYTES(ctx,sz)
 #define SKIP_STRING_UTF16(ctx,sz,n) SKIP_BYTES(ctx,sz)
 #else
-#define SKIP_GUID(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_GUID, 16, n, 0, CONTAINER_HELPER_LOG_INDENT(ctx), 1)
-#define SKIP_U8(ctx,n)  vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 1, n, 0, CONTAINER_HELPER_LOG_INDENT(ctx), 1)
-#define SKIP_U16(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 2, n, 0, CONTAINER_HELPER_LOG_INDENT(ctx), 1)
-#define SKIP_U24(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 3, n, 0, CONTAINER_HELPER_LOG_INDENT(ctx), 1)
-#define SKIP_U32(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 4, n, 0, CONTAINER_HELPER_LOG_INDENT(ctx), 1)
-#define SKIP_U64(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 8, n, 0, CONTAINER_HELPER_LOG_INDENT(ctx), 1)
-#define SKIP_FOURCC(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_FOURCC, 4, n, 0, CONTAINER_HELPER_LOG_INDENT(ctx), 1)
-#define READ_GUID(ctx,buffer,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_GUID, 16, n, (uint8_t *)buffer, CONTAINER_HELPER_LOG_INDENT(ctx), 0)
-#define READ_U8(ctx,n)  (uint8_t)vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 1, n, 0, CONTAINER_HELPER_LOG_INDENT(ctx), 0)
-#define READ_U16(ctx,n) (uint16_t)vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 2, n, 0, CONTAINER_HELPER_LOG_INDENT(ctx), 0)
-#define READ_U24(ctx,n) (uint32_t)vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 3, n, 0, CONTAINER_HELPER_LOG_INDENT(ctx), 0)
-#define READ_U32(ctx,n) (uint32_t)vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 4, n, 0, CONTAINER_HELPER_LOG_INDENT(ctx), 0)
-#define READ_U40(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 5, n, 0, CONTAINER_HELPER_LOG_INDENT(ctx), 0)
-#define READ_U48(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 6, n, 0, CONTAINER_HELPER_LOG_INDENT(ctx), 0)
-#define READ_U56(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 7, n, 0, CONTAINER_HELPER_LOG_INDENT(ctx), 0)
-#define READ_U64(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 8, n, 0, CONTAINER_HELPER_LOG_INDENT(ctx), 0)
-#define READ_FOURCC(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_FOURCC, 4, n, 0, CONTAINER_HELPER_LOG_INDENT(ctx), 0)
-#define READ_STRING_UTF16(ctx,buffer,sz,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_STRING_UTF16, sz, n, (uint8_t *)buffer, CONTAINER_HELPER_LOG_INDENT(ctx), 0)
-#define READ_STRING(ctx,buffer,sz,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_STRING, sz, n, (uint8_t *)buffer, CONTAINER_HELPER_LOG_INDENT(ctx), 0)
-#define SKIP_STRING_UTF16(ctx,sz,n)  vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_STRING_UTF16, sz, n, 0, CONTAINER_HELPER_LOG_INDENT(ctx), 1)
-#define SKIP_STRING(ctx,sz,n)  vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_STRING, sz, n, 0, CONTAINER_HELPER_LOG_INDENT(ctx), 1)
+#define SKIP_GUID(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_GUID, 16, n, 0, HELPER_LOG_INDENT(ctx), 1)
+#define SKIP_U8(ctx,n)  vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 1, n, 0, HELPER_LOG_INDENT(ctx), 1)
+#define SKIP_U16(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 2, n, 0, HELPER_LOG_INDENT(ctx), 1)
+#define SKIP_U24(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 3, n, 0, HELPER_LOG_INDENT(ctx), 1)
+#define SKIP_U32(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 4, n, 0, HELPER_LOG_INDENT(ctx), 1)
+#define SKIP_U64(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 8, n, 0, HELPER_LOG_INDENT(ctx), 1)
+#define SKIP_FOURCC(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_FOURCC, 4, n, 0, HELPER_LOG_INDENT(ctx), 1)
+#define READ_GUID(ctx,buffer,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_GUID, 16, n, (uint8_t *)buffer, HELPER_LOG_INDENT(ctx), 0)
+#define READ_U8(ctx,n)  (uint8_t)vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 1, n, 0, HELPER_LOG_INDENT(ctx), 0)
+#define READ_U16(ctx,n) (uint16_t)vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 2, n, 0, HELPER_LOG_INDENT(ctx), 0)
+#define READ_U24(ctx,n) (uint32_t)vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 3, n, 0, HELPER_LOG_INDENT(ctx), 0)
+#define READ_U32(ctx,n) (uint32_t)vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 4, n, 0, HELPER_LOG_INDENT(ctx), 0)
+#define READ_U40(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 5, n, 0, HELPER_LOG_INDENT(ctx), 0)
+#define READ_U48(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 6, n, 0, HELPER_LOG_INDENT(ctx), 0)
+#define READ_U56(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 7, n, 0, HELPER_LOG_INDENT(ctx), 0)
+#define READ_U64(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_UINT, 8, n, 0, HELPER_LOG_INDENT(ctx), 0)
+#define READ_FOURCC(ctx,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_FOURCC, 4, n, 0, HELPER_LOG_INDENT(ctx), 0)
+#define READ_STRING_UTF16(ctx,buffer,sz,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_STRING_UTF16, sz, n, (uint8_t *)buffer, HELPER_LOG_INDENT(ctx), 0)
+#define READ_STRING(ctx,buffer,sz,n) vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_STRING, sz, n, (uint8_t *)buffer, HELPER_LOG_INDENT(ctx), 0)
+#define SKIP_STRING_UTF16(ctx,sz,n)  vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_STRING_UTF16, sz, n, 0, HELPER_LOG_INDENT(ctx), 1)
+#define SKIP_STRING(ctx,sz,n)  vc_container_helper_read_debug(ctx, LOG_FORMAT_TYPE_STRING, sz, n, 0, HELPER_LOG_INDENT(ctx), 1)
 #endif
 
 #ifndef ENABLE_CONTAINERS_LOG_FORMAT
@@ -679,18 +683,18 @@ STATIC_INLINE VC_CONTAINER_STATUS_T vc_container_io_write_le_uint64(VC_CONTAINER
 #define WRITE_U64(ctx,v,n) _WRITE_U64(ctx,(uint64_t)(v))
 #define WRITE_STRING(ctx,buffer,size,n) WRITE_BYTES(ctx, buffer, size)
 #else
-#define WRITE_GUID(ctx,buffer,n) (vc_container_helper_write_debug(ctx, LOG_FORMAT_TYPE_GUID, 16, n, UINT64_C(0), (const uint8_t *)buffer, CONTAINER_HELPER_LOG_INDENT(ctx), !(ctx)->priv->io->module) ? 0 : 16)
-#define WRITE_U8(ctx,v,n)  vc_container_helper_write_debug(ctx, LOG_FORMAT_TYPE_UINT, 1, n, (uint64_t)(v), 0, CONTAINER_HELPER_LOG_INDENT(ctx), !(ctx)->priv->io->module)
-#define WRITE_FOURCC(ctx,v,n) vc_container_helper_write_debug(ctx, LOG_FORMAT_TYPE_FOURCC, 4, n, (uint64_t)(v), 0, CONTAINER_HELPER_LOG_INDENT(ctx), !(ctx)->priv->io->module)
-#define WRITE_U16(ctx,v,n) (uint16_t)vc_container_helper_write_debug(ctx, LOG_FORMAT_TYPE_UINT, 2, n, (uint64_t)(v), 0, CONTAINER_HELPER_LOG_INDENT(ctx), !(ctx)->priv->io->module)
-#define WRITE_U24(ctx,v,n) vc_container_helper_write_debug(ctx, LOG_FORMAT_TYPE_UINT, 3, n, (uint64_t)(v), 0, CONTAINER_HELPER_LOG_INDENT(ctx), !(ctx)->priv->io->module)
-#define WRITE_U32(ctx,v,n) vc_container_helper_write_debug(ctx, LOG_FORMAT_TYPE_UINT, 4, n, (uint64_t)(v), 0, CONTAINER_HELPER_LOG_INDENT(ctx), !(ctx)->priv->io->module)
-#define WRITE_U64(ctx,v,n) vc_container_helper_write_debug(ctx, LOG_FORMAT_TYPE_UINT, 8, n, (uint64_t)(v), 0, CONTAINER_HELPER_LOG_INDENT(ctx), !(ctx)->priv->io->module)
-#define WRITE_STRING(ctx,buffer,size,n) (vc_container_helper_write_debug(ctx, LOG_FORMAT_TYPE_STRING, size, n, UINT64_C(0), (const uint8_t *)buffer, CONTAINER_HELPER_LOG_INDENT(ctx), !(ctx)->priv->io->module) ? 0 : size)
+#define WRITE_GUID(ctx,buffer,n) (vc_container_helper_write_debug(ctx, LOG_FORMAT_TYPE_GUID, 16, n, UINT64_C(0), (const uint8_t *)buffer, HELPER_LOG_INDENT(ctx), !(ctx)->priv->io->module) ? 0 : 16)
+#define WRITE_U8(ctx,v,n)  vc_container_helper_write_debug(ctx, LOG_FORMAT_TYPE_UINT, 1, n, (uint64_t)(v), 0, HELPER_LOG_INDENT(ctx), !(ctx)->priv->io->module)
+#define WRITE_FOURCC(ctx,v,n) vc_container_helper_write_debug(ctx, LOG_FORMAT_TYPE_FOURCC, 4, n, (uint64_t)(v), 0, HELPER_LOG_INDENT(ctx), !(ctx)->priv->io->module)
+#define WRITE_U16(ctx,v,n) (uint16_t)vc_container_helper_write_debug(ctx, LOG_FORMAT_TYPE_UINT, 2, n, (uint64_t)(v), 0, HELPER_LOG_INDENT(ctx), !(ctx)->priv->io->module)
+#define WRITE_U24(ctx,v,n) vc_container_helper_write_debug(ctx, LOG_FORMAT_TYPE_UINT, 3, n, (uint64_t)(v), 0, HELPER_LOG_INDENT(ctx), !(ctx)->priv->io->module)
+#define WRITE_U32(ctx,v,n) vc_container_helper_write_debug(ctx, LOG_FORMAT_TYPE_UINT, 4, n, (uint64_t)(v), 0, HELPER_LOG_INDENT(ctx), !(ctx)->priv->io->module)
+#define WRITE_U64(ctx,v,n) vc_container_helper_write_debug(ctx, LOG_FORMAT_TYPE_UINT, 8, n, (uint64_t)(v), 0, HELPER_LOG_INDENT(ctx), !(ctx)->priv->io->module)
+#define WRITE_STRING(ctx,buffer,size,n) (vc_container_helper_write_debug(ctx, LOG_FORMAT_TYPE_STRING, size, n, UINT64_C(0), (const uint8_t *)buffer, HELPER_LOG_INDENT(ctx), !(ctx)->priv->io->module) ? 0 : size)
 #endif
 
 #ifdef ENABLE_CONTAINERS_LOG_FORMAT
-#define LOG_FORMAT(ctx, ...) do { if((ctx)->priv->io->module) vc_container_helper_format_debug(ctx, CONTAINER_HELPER_LOG_INDENT(ctx), __VA_ARGS__); } while(0)
+#define LOG_FORMAT(ctx, ...) do { vc_container_helper_format_debug(ctx, HELPER_LOG_INDENT(ctx), __VA_ARGS__); } while(0)
 #else
 #define LOG_FORMAT(ctx, ...) do {} while (0)
 #endif

@@ -68,6 +68,7 @@ set(packetizers_SRCS ${packetizers_SRCS} ${SOURCE_DIR}/mpga/mpga_packetizer.c)
 set(packetizers_SRCS ${packetizers_SRCS} ${SOURCE_DIR}/mpgv/mpgv_packetizer.c)
 set(packetizers_SRCS ${packetizers_SRCS} ${SOURCE_DIR}/pcm/pcm_packetizer.c)
 set(packetizers_SRCS ${packetizers_SRCS} ${SOURCE_DIR}/h264/avc1_packetizer.c)
+set(packetizers_SRCS ${packetizers_SRCS} ${SOURCE_DIR}/h264/nalu_parser.c)
 
 add_library(containers ${LIBRARY_TYPE} ${core_SRCS} ${io_SRCS} ${net_SRCS} ${packetizers_SRCS})
 target_link_libraries(containers dl)
