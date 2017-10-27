@@ -24,6 +24,32 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
+/*
+Common definitions between simple reader and writer.
+
+This simple format consists of a main metadata file which references one or
+more elementary stream files.
+The metadata file starts with a header describing the elementary streams
+which are available. This header has the following form:
+
+S1MPL3
+TRACK video, h264, 1920, 1080
+URI elementary_stream.h264
+TRACK audio, mp4a, 2, 44100, 0, 0
+URI elementary_stream.mp4a
+3LPM1S
+
+The first field after the track identifier is the type of stream (video, audio,
+subpicture), followed by the fourcc of the codec.
+For video streams, this is followed by the width and height.
+For audio streams, this is followed by the number of channels, sample rate,
+bits per sample and block alignment.
+
+Following the header, each line represents a packet of data in the form:
+<track_num> <size> <pts> <flags>
+*/
+
 #ifndef SIMPLE_COMMON_H
 #define SIMPLE_COMMON_H
 

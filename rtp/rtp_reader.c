@@ -24,6 +24,48 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
+/*
+Implementation of an RTP reader.
+
+DETAILS:
+URI needs to be in one of these formats:
+rtp://:<port>
+or
+rtp:<file>
+where:
+port - UDP port on which to listen
+file - Packetized file from which to read
+
+The URI also requires query section with name/value pairs. Common names are:
+rtppt - RTP payload type. See below.
+mime-type - MIME type, as defined by RFC3555
+rate - nominal sampling or clock rate
+channels - number of channels
+ssrc - SSRC on which to filter, as 8 hex characters
+Additional MIME type specific parameters can also be added.
+
+RTP Payload Types
+Values below 96 are defined by table 4 in RFC3551 and may not require any further
+attributes. 96-127 and above are dynamic and require further description. Values
+above 127 are invalid.
+
+Examples:
+rtp://:5678?rtppt=10
+rtp://:5678?rtppt=96;mime-type=audio/L16;rate=44100;channels=2
+(The above two are equivalent)
+rtp:myfile?rtppt=97;mime-type=audio/mpeg4-generic;rate=48000;channels=2;streamtype=5;profile-level-id=15;mode=AAC-hbr;config=1190;SizeLength=13;IndexLength=3;IndexDeltaLength=3;Profile=1;
+rtp:myfile?rtppt=98;mime-type=video/H264;rate=90000;packetization-mode=1;profile-level-id=4d401f;sprop-parameter-sets=J01AH6kYCgCvYA1AQEBtsK173wE=,KN4JyA==
+
+Known Limitations
+-----------------
+o Out of order packets are not supported.
+o RTCP is not supported.
+o A limited set of codecs are supported (L8, L16, MP4a and H.264).
+o L16 channel-order parameter is not supported.
+o The maximum size of a single RTP packet is 2K.
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

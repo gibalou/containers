@@ -25,6 +25,20 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+/*
+Implementation of a packetized file container I/O module. Used to simulate
+packet-based I/O such as UDP.
+
+When writing, each write forms a single packet. When reading, the number of
+bytes read is limited to the size of the next packet, and any unread bytes in
+the packet are lost.
+
+File format consists of a 4-byte header, used to establish byte order in the
+file, followed by an arbitrary number of packets. Each packet has an unsigned
+32-bit length, in the byte order indicated by the header, followed by that
+many bytes of data.
+*/
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>

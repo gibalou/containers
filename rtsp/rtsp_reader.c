@@ -24,6 +24,72 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
+/*
+Implementation of an RTSP reader.
+
+General behaviour of open
+-------------------------
+Send "DESCRIBE <uri> RTSP/1.0\n\n"
+Read content of response (SDP format)
+For each 'm' item:
+   Consider 'm' value and following attributes:
+      m=<mime> <port> RTP/AVP <payload>
+      a=rtpmap:<payload> <mime sub>/<clock>[/<channels>]
+      a=fmtp:<payload> <payload params>
+      a=control:<RTSP control URI>
+   Add "mime-type=<mime>/<mimesub>" to <payload params>.
+   Add "rate=<clock>" to <payload params>.
+   Add "channels=<channels>" to <payload params>, if present.
+   Generate RTP reader URI:
+      Remove whitespaces around each payload param name and value.
+      If RTSP URI has network information (starts "rtsp://"):
+         If <port> is zero, use 5004. (RFC stated default)
+         RTP URI is "rtp://:<port>?<payload params>"
+         If this fails as in use, try some even ports from the range 49152
+            to 65534.
+      Otherwise:
+         RTP URI is "rtp:<RTSP URI path>.t<t>.pkt?<payload params>
+         where <t> is the track number starting at zero.
+   Open reader using URI and store context in track module
+   (If opening fails because port is not available, increment port by two and
+      try again up to a defined number of times)
+   Copy RTP reader track info into RTSP reader track info.
+   Increment track counter
+For each track created:
+   Send SETUP request for control URI, with transport header containing necessary
+      parameters.
+   Should get OK response, including a Session: header.
+   Send PLAY request, with Session: header from SETUP response.
+   Should get OK response, including RTP-Info: header containing initial sequence
+      number and timestamp base
+   Pass initial sequence number and timestamp base to RTP reader.
+
+General behaviour of read
+-------------------------
+If a specific track is requested, set it to blocking and read from it.
+Otherwise, set all tracks to non-blocking and request info from all of them.
+If no track has data available, wait a short time and check again, to avoid
+   overloading the CPU.
+If more than one track has data available, pick the one with the lowest timestamp.
+Read from selected track with given parameters (and fix the track number)
+
+Known Limitations
+-----------------
+o Multiple payload type SDP media items are not supported. Only the first
+   payload type given on each media item will be used.
+o Up to four media items are allowed (i.e. up to four tracks).
+o Only audio and video media items are recognised.
+o The maximum allowed length of an RTSP main URI or media item control URI is
+   1K.
+o Folded headers (see RFC822, section 3.1.1) are not supported.
+o Maximum length of a Session header value is 100 characters.
+o Maximum space for headers and content in a request or response is fixed at
+   2K.
+o RTP track metadata is not copied into RTSP track metadata.
+o User-Agent header may need updating.
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
