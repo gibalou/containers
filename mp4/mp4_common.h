@@ -1,5 +1,6 @@
 /*
 Copyright (c) 2012, Broadcom Europe Ltd
+Copyright (c) 2017, Gildas Bazin
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -36,9 +37,13 @@ typedef enum {
    MP4_BOX_TYPE_FTYP              = VC_FOURCC('f','t','y','p'),
    MP4_BOX_TYPE_MDAT              = VC_FOURCC('m','d','a','t'),
    MP4_BOX_TYPE_MOOV              = VC_FOURCC('m','o','o','v'),
+   MP4_BOX_TYPE_MOOF              = VC_FOURCC('m','o','o','f'),
    MP4_BOX_TYPE_MVHD              = VC_FOURCC('m','v','h','d'),
    MP4_BOX_TYPE_TRAK              = VC_FOURCC('t','r','a','k'),
+   MP4_BOX_TYPE_TRAF              = VC_FOURCC('t','r','a','f'),
    MP4_BOX_TYPE_TKHD              = VC_FOURCC('t','k','h','d'),
+   MP4_BOX_TYPE_EDTS              = VC_FOURCC('e','d','t','s'),
+   MP4_BOX_TYPE_ELST              = VC_FOURCC('e','l','s','t'),
    MP4_BOX_TYPE_MDIA              = VC_FOURCC('m','d','i','a'),
    MP4_BOX_TYPE_MDHD              = VC_FOURCC('m','d','h','d'),
    MP4_BOX_TYPE_HDLR              = VC_FOURCC('h','d','l','r'),
@@ -73,11 +78,26 @@ typedef enum {
    MP4_BOX_TYPE_DAWP              = VC_FOURCC('d','a','w','p'),
    MP4_BOX_TYPE_DEVC              = VC_FOURCC('d','e','v','c'),
    MP4_BOX_TYPE_WAVE              = VC_FOURCC('w','a','v','e'),
+   MP4_BOX_TYPE_MVEX              = VC_FOURCC('m','v','e','x'),
+   MP4_BOX_TYPE_TREX              = VC_FOURCC('t','r','e','x'),
+   MP4_BOX_TYPE_TFHD              = VC_FOURCC('t','f','h','d'),
+   MP4_BOX_TYPE_TRUN              = VC_FOURCC('t','r','u','n'),
+   MP4_BOX_TYPE_PSSH              = VC_FOURCC('p','s','s','h'),
+   MP4_BOX_TYPE_SINF              = VC_FOURCC('s','i','n','f'),
+   MP4_BOX_TYPE_FRMA              = VC_FOURCC('f','r','m','a'),
+   MP4_BOX_TYPE_SCHM              = VC_FOURCC('s','c','h','m'),
+   MP4_BOX_TYPE_SCHI              = VC_FOURCC('s','c','h','i'),
+   MP4_BOX_TYPE_TENC              = VC_FOURCC('t','e','n','c'),
+   MP4_BOX_TYPE_SAIZ              = VC_FOURCC('s','a','i','z'),
+   MP4_BOX_TYPE_SAIO              = VC_FOURCC('s','a','i','o'),
+   MP4_BOX_TYPE_SENC              = VC_FOURCC('s','e','n','c'),
    MP4_BOX_TYPE_ZERO              = 0
 } MP4_BOX_TYPE_T;
 
 typedef enum {
    MP4_BRAND_ISOM                 = VC_FOURCC('i','s','o','m'),
+   MP4_BRAND_ISO2                 = VC_FOURCC('i','s','o','2'),
+   MP4_BRAND_ISO6                 = VC_FOURCC('i','s','o','6'),
    MP4_BRAND_MP42                 = VC_FOURCC('m','p','4','2'),
    MP4_BRAND_3GP4                 = VC_FOURCC('3','g','p','4'),
    MP4_BRAND_3GP5                 = VC_FOURCC('3','g','p','5'),
@@ -97,6 +117,8 @@ typedef enum
    MP4_SAMPLE_TABLE_STSS = 4,  /* sync sample */
    MP4_SAMPLE_TABLE_CO64 = 5,  /* sample to chunk-offset */
    MP4_SAMPLE_TABLE_CTTS = 6,  /* composite time to sample */
+   MP4_SAMPLE_TABLE_TRUN = 7,  /* sample run */
+   MP4_SAMPLE_TABLE_SENC = 8,  /* sample encryption */
    MP4_SAMPLE_TABLE_NUM
 } MP4_SAMPLE_TABLE_T;
 
