@@ -136,6 +136,7 @@ extern "C" {
 #define VC_CONTAINER_CODEC_FLAC        VC_FOURCC('f','l','a','c')
 #define VC_CONTAINER_CODEC_VORBIS      VC_FOURCC('v','o','r','b')
 #define VC_CONTAINER_CODEC_SPEEX       VC_FOURCC('s','p','x',' ')
+#define VC_CONTAINER_CODEC_OPUS        VC_FOURCC('o','p','u','s')
 #define VC_CONTAINER_CODEC_ATRAC3      VC_FOURCC('a','t','r','3')
 #define VC_CONTAINER_CODEC_ATRACX      VC_FOURCC('a','t','r','x')
 #define VC_CONTAINER_CODEC_ATRACL      VC_FOURCC('a','t','r','l')

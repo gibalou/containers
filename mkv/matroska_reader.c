@@ -739,6 +739,7 @@ static const struct {
    {VC_CONTAINER_CODEC_PCM_FLOAT_LE,  "A_PCM/FLOAT/IEEE", 0},
    {0,                          "A_REAL/xyzt", 0},
    {0,                          "A_REAL/14_4", 0},
+   {VC_CONTAINER_CODEC_OPUS,    "A_OPUS", 0},
 
    /* Text */
    {VC_CONTAINER_CODEC_TEXT,    "S_TEXT/ASCII", 0},
