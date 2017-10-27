@@ -984,15 +984,15 @@ static VC_CONTAINER_STATUS_T mkv_read_subelements_ebml( VC_CONTAINER_T *p_ctx, M
       if(size <= 0) goto unknown_doctype;
       if(size > (int)sizeof(doctype)) goto unknown_doctype;
       if((int)READ_STRING(p_ctx, doctype, size, "string") != size) return STREAM_STATUS(p_ctx);
-      if((size != sizeof("matroska")-1 || strncmp(doctype, "matroska", (int)size)) &&
-         (size != sizeof("webm")-1 || strncmp(doctype, "webm", (int)size)))
+      if(((size != sizeof("matroska")-1 && size != sizeof("matroska")) || memcmp(doctype, "matroska", (int)size)) &&
+         ((size != sizeof("webm")-1 && size != sizeof("webm")) || memcmp(doctype, "webm", (int)size)))
          goto unknown_doctype;
 
       module->is_doctype_valid = true;
       return VC_CONTAINER_SUCCESS;
 
  unknown_doctype:
-      LOG_DEBUG(p_ctx, "invalid doctype");
+      LOG_DEBUG(p_ctx, "invalid doctype size %i", size);
       return VC_CONTAINER_ERROR_FORMAT_NOT_SUPPORTED;
    }
 
