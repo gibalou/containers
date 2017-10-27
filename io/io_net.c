@@ -40,14 +40,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef IO_NET_CAPTURE_PACKETS
 #include <stdio.h>
 
-#ifdef ENABLE_CONTAINERS_STANDALONE
 #ifdef _MSC_VER
 #define IO_NET_CAPTURE_PREFIX          "C:\\"
 #else /* !_MSC_VER */
 #define IO_NET_CAPTURE_PREFIX          "~/"
-#endif
-#else /* !ENABLE_CONTAINERS_STANDALONE */
-#define IO_NET_CAPTURE_PREFIX          "/mfs/sd/"
 #endif
 
 #define IO_NET_CAPTURE_READ_FILE       "capture_read_%s_%s%c.pkt"

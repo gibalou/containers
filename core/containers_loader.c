@@ -33,8 +33,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "containers/core/containers_loader.h"
 
 #if !defined(ENABLE_CONTAINERS_STANDALONE)
-   #include "vcos_dlfcn.h"
-   #define DL_SUFFIX VCOS_SO_EXT
+   #include <dlfcn.h>
+   #define DL_SUFFIX ".so"
    #ifndef DL_PATH_PREFIX
       #define DL_PATH_PREFIX ""
    #endif
@@ -359,18 +359,18 @@ static VC_CONTAINER_READER_OPEN_FUNC_T load_library(void **handle, const char *n
    snprintf(dl_name, dl_size, "%s%s%s%s%s", DL_PATH_PREFIX, read ? DL_PREFIX_RD : DL_PREFIX_WR, ext ? ext : "", name, DL_SUFFIX);
    snprintf(entrypt_name, ep_size, "%s_%s%s", name, ext ? ext : "", read ? entrypt_read : entrypt_write);
       
-   if ( (dl_handle = vcos_dlopen(dl_name, VCOS_DL_NOW)) != NULL )
+   if ( (dl_handle = dlopen(dl_name, RTLD_NOW)) != NULL )
    {
       /* Try generic entrypoint name before the mangled, full name */
-      func = (VC_CONTAINER_READER_OPEN_FUNC_T)vcos_dlsym(dl_handle, read ? entrypt_read : entrypt_write);
+      func = (VC_CONTAINER_READER_OPEN_FUNC_T)dlsym(dl_handle, read ? entrypt_read : entrypt_write);
 #if !defined(__VIDEOCORE__) /* The following would be pointless on MW/VideoCore */
-      if (!func) func = (VC_CONTAINER_READER_OPEN_FUNC_T)vcos_dlsym(dl_handle, entrypt_name);
+      if (!func) func = (VC_CONTAINER_READER_OPEN_FUNC_T)dlsym(dl_handle, entrypt_name);
 #endif
       /* Only return handle if symbol found */
       if (func)
          *handle = dl_handle;
       else
-         vcos_dlclose(dl_handle);
+         dlclose(dl_handle);
    }
   
    free(entrypt_name);
@@ -381,7 +381,7 @@ static VC_CONTAINER_READER_OPEN_FUNC_T load_library(void **handle, const char *n
 /*****************************************************************************/
 static void unload_library(void *handle)
 {
-   vcos_dlclose(handle);
+   dlclose(handle);
 }
 
 #else /* !defined(ENABLE_CONTAINERS_STANDALONE) */

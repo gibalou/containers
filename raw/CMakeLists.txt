@@ -9,10 +9,10 @@ add_library(reader_raw_video ${LIBRARY_TYPE} raw_video_reader.c)
 
 target_link_libraries(reader_raw_video containers)
 
-install(TARGETS reader_raw_video DESTINATION ${VMCS_PLUGIN_DIR})
+install(TARGETS reader_raw_video DESTINATION ${PLUGIN_DIR})
 
 add_library(writer_raw_video ${LIBRARY_TYPE} raw_video_writer.c)
 
 target_link_libraries(writer_raw_video containers)
 
-install(TARGETS writer_raw_video DESTINATION ${VMCS_PLUGIN_DIR})
+install(TARGETS writer_raw_video DESTINATION ${PLUGIN_DIR})

@@ -10,5 +10,5 @@ add_library(reader_rtsp ${LIBRARY_TYPE} ${rtsp_SRCS})
 
 target_link_libraries(reader_rtsp containers)
 
-install(TARGETS reader_rtsp DESTINATION ${VMCS_PLUGIN_DIR})
+install(TARGETS reader_rtsp DESTINATION ${PLUGIN_DIR})
 

@@ -9,11 +9,11 @@ add_library(reader_mp4 ${LIBRARY_TYPE} mp4_reader.c)
 
 target_link_libraries(reader_mp4 containers)
 
-install(TARGETS reader_mp4 DESTINATION ${VMCS_PLUGIN_DIR})
+install(TARGETS reader_mp4 DESTINATION ${PLUGIN_DIR})
 
 add_library(writer_mp4 ${LIBRARY_TYPE} mp4_writer.c)
 
 target_link_libraries(writer_mp4 containers)
 
-install(TARGETS writer_mp4 DESTINATION ${VMCS_PLUGIN_DIR})
+install(TARGETS writer_mp4 DESTINATION ${PLUGIN_DIR})
 

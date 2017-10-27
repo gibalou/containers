@@ -9,4 +9,4 @@ add_library(writer_dummy ${LIBRARY_TYPE} dummy_writer.c)
 
 target_link_libraries(writer_dummy containers)
 
-install(TARGETS writer_dummy DESTINATION ${VMCS_PLUGIN_DIR})
+install(TARGETS writer_dummy DESTINATION ${PLUGIN_DIR})

@@ -9,5 +9,4 @@ add_library(reader_ps ${LIBRARY_TYPE} ps_reader.c)
 
 target_link_libraries(reader_ps containers)
 
-install(TARGETS reader_ps DESTINATION ${VMCS_PLUGIN_DIR})
-
+install(TARGETS reader_ps DESTINATION ${PLUGIN_DIR})

@@ -32,10 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "containers/core/containers_private.h"
 #include "containers/core/containers_logging.h"
 
-#ifndef ENABLE_CONTAINERS_STANDALONE
-# include "vcos.h"
-#endif
-
 #ifdef __ANDROID__
 #define LOG_TAG "ContainersCore"
 #include <cutils/log.h>
@@ -101,11 +97,7 @@ void vc_container_log_vargs(VC_CONTAINER_T *ctx, VC_CONTAINER_LOG_TYPE_T type, c
       LOG_PRI_VA(logLevel, LOG_TAG, format, args);
    }
 #else
-#ifndef ENABLE_CONTAINERS_STANDALONE
-   vcos_vlog(format, args);
-#else
    vprintf(format, args); printf("\n");
    fflush(0);
-#endif
 #endif
 }

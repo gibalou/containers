@@ -31,13 +31,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Common definitions for containers infrastructure
  */
 
-#ifndef ENABLE_CONTAINERS_STANDALONE
-# include "vcos.h"
-# define vc_container_assert(a) vcos_assert(a)
-#else
-# include "assert.h"
-# define vc_container_assert(a) assert(a)
-#endif /* ENABLE_CONTAINERS_STANDALONE */
+#include <strings.h>
+#include <assert.h>
+#define vc_container_assert(a) assert(a)
 
 #ifndef countof
 # define countof(a) (sizeof(a) / sizeof(a[0]))
@@ -57,10 +53,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define STATIC_INLINE static __inline
 #define VC_CONTAINER_PARAM_UNUSED(a) (void)(a)
-
-#if defined(__HIGHC__) && !defined(strcasecmp)
-# define strcasecmp(a,b) _stricmp(a,b)
-#endif
 
 #if defined(__GNUC__) && (__GNUC__ > 2)
 # define VC_CONTAINER_CONSTRUCTOR(func) void __attribute__((constructor,used)) func(void)

@@ -9,5 +9,5 @@ add_library(reader_flv ${LIBRARY_TYPE} flv_reader.c)
 
 target_link_libraries(reader_flv containers)
 
-install(TARGETS reader_flv DESTINATION ${VMCS_PLUGIN_DIR})
+install(TARGETS reader_flv DESTINATION ${PLUGIN_DIR})
 

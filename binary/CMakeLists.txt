@@ -9,11 +9,11 @@ add_library(reader_binary ${LIBRARY_TYPE} binary_reader.c)
 
 target_link_libraries(reader_binary containers)
 
-install(TARGETS reader_binary DESTINATION ${VMCS_PLUGIN_DIR})
+install(TARGETS reader_binary DESTINATION ${PLUGIN_DIR})
 
 add_library(writer_binary ${LIBRARY_TYPE} binary_writer.c)
 
 target_link_libraries(writer_binary containers)
 
-install(TARGETS writer_binary DESTINATION ${VMCS_PLUGIN_DIR})
+install(TARGETS writer_binary DESTINATION ${PLUGIN_DIR})
 

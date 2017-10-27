@@ -2,18 +2,23 @@ SET( SOURCE_DIR . )
 
 # We support building both static and shared libraries
 if (NOT DEFINED LIBRARY_TYPE)
-set(LIBRARY_TYPE SHARED)
+set(LIBRARY_TYPE STATIC)
 endif (NOT DEFINED LIBRARY_TYPE)
 
+if (${LIBRARY_TYPE} STREQUAL STATIC)
+add_definitions(-DENABLE_CONTAINERS_STANDALONE)
+endif (${LIBRARY_TYPE} STREQUAL STATIC)
+
 # Make sure the compiler can find the necessary include files
-include_directories (${SOURCE_DIR}/.. ${SOURCE_DIR}/../interface/vcos)
+include_directories (${SOURCE_DIR}/..)
 
 # Needed for the container loader
-add_definitions(-DDL_PATH_PREFIX="${VMCS_PLUGIN_DIR}/")
+set(PLUGIN_DIR plugins)
+add_definitions(-DDL_PATH_PREFIX=\\\"${PLUGIN_DIR}/\\\")
 
 SET( GCC_COMPILER_FLAGS -Wall -g -O2 -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wcast-qual -Wwrite-strings -Wundef )
 SET( GCC_COMPILER_FLAGS ${GCC_COMPILER_FLAGS} -Wextra )#-Wno-missing-field-initializers )
-SET( GCC_COMPILER_FLAGS ${GCC_COMPILER_FLAGS} -std=c99 -D_POSIX_C_SOURCE=200112L )
+SET( GCC_COMPILER_FLAGS ${GCC_COMPILER_FLAGS} -std=c99 -D_POSIX_C_SOURCE=200809L )
 SET( GCC_COMPILER_FLAGS ${GCC_COMPILER_FLAGS} -Wno-missing-field-initializers )
 SET( GCC_COMPILER_FLAGS ${GCC_COMPILER_FLAGS} -Wno-unused-value )
 
@@ -55,7 +60,7 @@ endif (DEFINED MSVC)
 set(extra_net_SRCS net_sockets_win32.c net_sockets_win32.h net_sockets_null.c)
 add_custom_target(containers_net_extra ALL
     COMMAND touch ${extra_net_SRCS}
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/containers/net)
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/net)
 
 # Packetizers library
 set(packetizers_SRCS ${packetizers_SRCS} ${SOURCE_DIR}/core/packetizers.c)
@@ -65,7 +70,7 @@ set(packetizers_SRCS ${packetizers_SRCS} ${SOURCE_DIR}/pcm/pcm_packetizer.c)
 set(packetizers_SRCS ${packetizers_SRCS} ${SOURCE_DIR}/h264/avc1_packetizer.c)
 
 add_library(containers ${LIBRARY_TYPE} ${core_SRCS} ${io_SRCS} ${net_SRCS} ${packetizers_SRCS})
-target_link_libraries(containers vcos)
+target_link_libraries(containers dl)
 install(TARGETS containers DESTINATION lib)
 
 set(container_readers)

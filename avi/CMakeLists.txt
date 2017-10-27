@@ -9,11 +9,11 @@ add_library(reader_avi ${LIBRARY_TYPE} avi_reader.c)
 
 target_link_libraries(reader_avi containers)
 
-install(TARGETS reader_avi DESTINATION ${VMCS_PLUGIN_DIR})
+install(TARGETS reader_avi DESTINATION ${PLUGIN_DIR})
 
 add_library(writer_avi ${LIBRARY_TYPE} avi_writer.c)
 
 target_link_libraries(writer_avi containers)
 
-install(TARGETS writer_avi DESTINATION ${VMCS_PLUGIN_DIR})
+install(TARGETS writer_avi DESTINATION ${PLUGIN_DIR})
 

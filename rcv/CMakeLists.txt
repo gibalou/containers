@@ -9,5 +9,5 @@ add_library(reader_rcv ${LIBRARY_TYPE} rcv_reader.c)
 
 target_link_libraries(reader_rcv containers)
 
-install(TARGETS reader_rcv DESTINATION ${VMCS_PLUGIN_DIR})
+install(TARGETS reader_rcv DESTINATION ${PLUGIN_DIR})
 

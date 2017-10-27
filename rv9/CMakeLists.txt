@@ -9,5 +9,5 @@ add_library(reader_rv9 ${LIBRARY_TYPE} rv9_reader.c)
 
 target_link_libraries(reader_rv9 containers)
 
-install(TARGETS reader_rv9 DESTINATION ${VMCS_PLUGIN_DIR})
+install(TARGETS reader_rv9 DESTINATION ${PLUGIN_DIR})
 

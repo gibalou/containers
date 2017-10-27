@@ -35,8 +35,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "containers/core/containers_filters.h"
 
 #if !defined(ENABLE_CONTAINERS_STANDALONE)
-   #include "vcos_dlfcn.h"
-   #define DL_SUFFIX VCOS_SO_EXT
+   #include "dlfcn.h"
+   #define DL_SUFFIX ".so"
    #ifndef DL_PATH_PREFIX
       #define DL_PATH_PREFIX ""
    #endif   
@@ -194,16 +194,16 @@ static VC_CONTAINER_FILTER_OPEN_FUNC_T load_library(void **handle, VC_CONTAINER_
    snprintf(dl_name, dl_name_len, "%s%s%s%s", DL_PATH_PREFIX, filter_, name, DL_SUFFIX);
    snprintf(entrypt_name, entrypt_name_len, "%s_%s%s", name, filter_, entrypt_name_short);
 
-   if ((dl_handle = vcos_dlopen(dl_name, VCOS_DL_NOW)) != NULL)
+   if ((dl_handle = dlopen(dl_name, RTLD_NOW)) != NULL)
    {
       /* Try generic entrypoint name before the mangled, full name */
-      func = (VC_CONTAINER_FILTER_OPEN_FUNC_T)vcos_dlsym(dl_handle, entrypt_name_short);
-      if (!func) func = (VC_CONTAINER_FILTER_OPEN_FUNC_T)vcos_dlsym(dl_handle, entrypt_name);
+      func = (VC_CONTAINER_FILTER_OPEN_FUNC_T)dlsym(dl_handle, entrypt_name_short);
+      if (!func) func = (VC_CONTAINER_FILTER_OPEN_FUNC_T)dlsym(dl_handle, entrypt_name);
       /* Only return handle if symbol found */
       if (func)
          *handle = dl_handle;
       else
-         vcos_dlclose(dl_handle);      
+         dlclose(dl_handle);
    }
 
    free(dl_name);
@@ -217,6 +217,6 @@ static void unload_library(void *handle)
 #ifdef ENABLE_CONTAINERS_STANDALONE
    VC_CONTAINER_PARAM_UNUSED(handle);
 #else
-   vcos_dlclose(handle);
+   dlclose(handle);
 #endif
 }

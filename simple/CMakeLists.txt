@@ -9,10 +9,10 @@ add_library(reader_simple ${LIBRARY_TYPE} simple_reader.c)
 
 target_link_libraries(reader_simple containers)
 
-install(TARGETS reader_simple DESTINATION ${VMCS_PLUGIN_DIR})
+install(TARGETS reader_simple DESTINATION ${PLUGIN_DIR})
 
 add_library(writer_simple ${LIBRARY_TYPE} simple_writer.c)
 
 target_link_libraries(writer_simple containers)
 
-install(TARGETS writer_simple DESTINATION ${VMCS_PLUGIN_DIR})
+install(TARGETS writer_simple DESTINATION ${PLUGIN_DIR})
