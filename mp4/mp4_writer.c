@@ -1,5 +1,6 @@
 /*
 Copyright (c) 2012, Broadcom Europe Ltd
+Copyright (c) 2017, Gildas Bazin
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -55,6 +56,7 @@ typedef struct VC_CONTAINER_TRACK_MODULE_T
    uint32_t fourcc;
    uint32_t samples;
    uint32_t chunks;
+   uint32_t stsd_entries;
 
    int64_t offset;
    int64_t timestamp;
@@ -128,6 +130,8 @@ static VC_CONTAINER_STATUS_T mp4_write_box_stss( VC_CONTAINER_T *p_ctx );
 static VC_CONTAINER_STATUS_T mp4_write_box_vide( VC_CONTAINER_T *p_ctx );
 static VC_CONTAINER_STATUS_T mp4_write_box_soun( VC_CONTAINER_T *p_ctx );
 static VC_CONTAINER_STATUS_T mp4_write_box_esds( VC_CONTAINER_T *p_ctx );
+static VC_CONTAINER_STATUS_T mp4_write_box_mvex( VC_CONTAINER_T *p_ctx );
+static VC_CONTAINER_STATUS_T mp4_write_box_trex( VC_CONTAINER_T *p_ctx );
 
 static struct {
   const MP4_BOX_TYPE_T type;
@@ -159,6 +163,8 @@ static struct {
    {MP4_BOX_TYPE_VIDE, mp4_write_box_vide},
    {MP4_BOX_TYPE_SOUN, mp4_write_box_soun},
    {MP4_BOX_TYPE_ESDS, mp4_write_box_esds},
+   {MP4_BOX_TYPE_MVEX, mp4_write_box_mvex},
+   {MP4_BOX_TYPE_TREX, mp4_write_box_trex},
    {MP4_BOX_TYPE_UNKNOWN, 0}
 };
 
@@ -229,6 +235,8 @@ static VC_CONTAINER_STATUS_T mp4_write_box_ftyp( VC_CONTAINER_T *p_ctx )
    if(module->brand == MP4_BRAND_SKM2)
       WRITE_FOURCC(p_ctx, MP4_BRAND_SKM2, "compatible_brands");
    WRITE_FOURCC(p_ctx, MP4_BRAND_ISOM, "compatible_brands");
+   WRITE_FOURCC(p_ctx, MP4_BRAND_ISO2, "compatible_brands");
+   WRITE_FOURCC(p_ctx, MP4_BRAND_ISO6, "compatible_brands");
    WRITE_FOURCC(p_ctx, MP4_BRAND_MP42, "compatible_brands");
    WRITE_FOURCC(p_ctx, MP4_BRAND_3GP4, "compatible_brands");
 
@@ -252,7 +260,43 @@ static VC_CONTAINER_STATUS_T mp4_write_box_moov( VC_CONTAINER_T *p_ctx )
       if(status != VC_CONTAINER_SUCCESS) return status;
    }
 
+#if 0
+   status = mp4_write_box(p_ctx, MP4_BOX_TYPE_MVEX);
+#endif
    return status;
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_write_box_mvex( VC_CONTAINER_T *p_ctx )
+{
+   VC_CONTAINER_STATUS_T status = VC_CONTAINER_SUCCESS;
+   VC_CONTAINER_MODULE_T *module = p_ctx->priv->module;
+   unsigned int i;
+
+   for(i = 0; i < p_ctx->tracks_num; i++)
+   {
+      module->current_track = i;
+      status = mp4_write_box(p_ctx, MP4_BOX_TYPE_TREX);
+      if(status != VC_CONTAINER_SUCCESS) return status;
+   }
+
+   return STREAM_STATUS(p_ctx);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_write_box_trex( VC_CONTAINER_T *p_ctx )
+{
+   VC_CONTAINER_MODULE_T *module = p_ctx->priv->module;
+
+   WRITE_U8(p_ctx, 0, "version");
+   WRITE_U24(p_ctx, 0, "flags");
+   WRITE_U32(p_ctx, module->current_track + 1, "track_ID");
+   WRITE_U32(p_ctx, 1, "default_sample_description");
+   WRITE_U32(p_ctx, 1, "default_sample_duration");
+   WRITE_U32(p_ctx, 1, "default_sample_size");
+   WRITE_U32(p_ctx, 1, "default_sample_flags");
+
+   return STREAM_STATUS(p_ctx);
 }
 
 /*****************************************************************************/
@@ -612,11 +656,12 @@ static VC_CONTAINER_STATUS_T mp4_writer_write_sample_to_temp( VC_CONTAINER_T *p_
    VC_CONTAINER_MODULE_T *module = p_ctx->priv->module;
    int32_t dts_diff = packet->dts - module->prev_sample_dts;
    uint8_t keyframe = (packet->flags & VC_CONTAINER_PACKET_FLAG_KEYFRAME) ? 0x80 : 0;
+   uint8_t sd_index = ((packet->flags >> 24) & 0x70);
 
    vc_container_io_write_be_uint32(module->temp.io, packet->size);
    vc_container_io_write_be_uint32(module->temp.io, dts_diff);
    vc_container_io_write_be_uint24(module->temp.io, (uint32_t)(packet->pts - packet->dts));
-   vc_container_io_write_uint8(module->temp.io, packet->track | keyframe);
+   vc_container_io_write_uint8(module->temp.io, packet->track | keyframe | sd_index);
    module->prev_sample_dts = packet->dts;
    return module->temp.io->status;
 }
@@ -632,7 +677,8 @@ static VC_CONTAINER_STATUS_T mp4_writer_read_sample_from_temp( VC_CONTAINER_T *p
    packet->pts = packet->dts + vc_container_io_read_be_uint24(module->temp.io);
    packet->track = vc_container_io_read_uint8(module->temp.io);
    packet->flags = (packet->track & 0x80) ? VC_CONTAINER_PACKET_FLAG_KEYFRAME : 0;
-   packet->track &= 0x7F;
+   packet->flags |= ((packet->track & 0x70) << 24);
+   packet->track &= 0xF;
    return module->temp.io->status;
 }
 
@@ -723,6 +769,7 @@ static VC_CONTAINER_STATUS_T mp4_write_box_stsc( VC_CONTAINER_T *p_ctx )
    status = mp4_writer_read_sample_from_temp(p_ctx, &sample);
    while(status == VC_CONTAINER_SUCCESS)
    {
+      unsigned int sample_description_index = sample.flags >> 28;
       if(sample.track != module->current_track) goto skip;
 
       /* Is it a new chunk ? */
@@ -733,7 +780,7 @@ static VC_CONTAINER_STATUS_T mp4_write_box_stsc( VC_CONTAINER_T *p_ctx )
          {
             WRITE_U32(p_ctx,  first_chunk, "first_chunk");
             WRITE_U32(p_ctx,  samples_in_chunk, "samples_per_chunk");
-            WRITE_U32(p_ctx,  1, "sample_description_index");
+            WRITE_U32(p_ctx,  1 + sample_description_index, "sample_description_index");
             entries++;
          }
          first_chunk = chunks;
@@ -950,6 +997,7 @@ static VC_CONTAINER_STATUS_T mp4_write_box_vide( VC_CONTAINER_T *p_ctx )
    unsigned int i;
 
    for(i = 0; i < 6; i++) WRITE_U8(p_ctx, 0, "reserved");
+   track->priv->module->stsd_entries++;
    WRITE_U16(p_ctx, 1, "data_reference_index");
 
    WRITE_U16(p_ctx, 0, "pre_defined");
@@ -967,7 +1015,9 @@ static VC_CONTAINER_STATUS_T mp4_write_box_vide( VC_CONTAINER_T *p_ctx )
 
    switch(track->format->codec)
    {
-   case VC_CONTAINER_CODEC_H264: return mp4_write_box_vide_avcC(p_ctx);
+   case VC_CONTAINER_CODEC_H264:
+      return track->priv->module->fourcc == VC_FOURCC('a','v','c','1') ?
+         mp4_write_box_vide_avcC(p_ctx) : STREAM_STATUS(p_ctx);
    case VC_CONTAINER_CODEC_H263: return mp4_write_box_vide_d263(p_ctx);
    case VC_CONTAINER_CODEC_MP4V: return mp4_write_box(p_ctx, MP4_BOX_TYPE_ESDS);
    default: break;
@@ -1021,6 +1071,7 @@ static VC_CONTAINER_STATUS_T mp4_write_box_soun( VC_CONTAINER_T *p_ctx )
    unsigned int i, version = 0;
 
    for(i = 0; i < 6; i++) WRITE_U8(p_ctx, 0, "reserved");
+   track->priv->module->stsd_entries++;
    WRITE_U16(p_ctx, 1, "data_reference_index");
 
    if(module->brand == MP4_BRAND_QT)
@@ -1146,13 +1197,22 @@ static VC_CONTAINER_STATUS_T mp4_writer_close( VC_CONTAINER_T *p_ctx )
    int64_t mdat_size;
 
    mdat_size = STREAM_POSITION(p_ctx) - module->mdat_offset;
+   if (mdat_size == 8)
+   {
+      /* Empty mdat. Remove it. */
+      SEEK(p_ctx, module->mdat_offset);
+      mdat_size = 0;
+   }
 
    /* Write the moov box */
    status = mp4_write_box(p_ctx, MP4_BOX_TYPE_MOOV);
 
    /* Finalise the mdat box */
-   SEEK(p_ctx, module->mdat_offset);
-   WRITE_U32(p_ctx, (uint32_t)mdat_size, "mdat size" );
+   if (mdat_size)
+   {
+      SEEK(p_ctx, module->mdat_offset);
+      WRITE_U32(p_ctx, (uint32_t)mdat_size, "mdat size" );
+   }
 
    for(; p_ctx->tracks_num > 0; p_ctx->tracks_num--)
       vc_container_free_track(p_ctx, p_ctx->tracks[p_ctx->tracks_num-1]);
