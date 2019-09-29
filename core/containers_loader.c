@@ -64,7 +64,7 @@ static const char* container_for_fileext(const char *fileext);
  ********************************************************************************/
 
 static const char *readers[] =
-{"mp4", "asf", "avi", "mkv", "wav", "flv", "simple", "rawvideo", "rtpdump", "mpga", "ts", "ps", "rtp", "rtsp", "rcv", "rv9", "qsynth", "binary", 0};
+{"mp4", "asf", "avi", "mkv", "wav", "flv", "simple", "fsv", "rawvideo", "rtpdump", "mpga", "ts", "ps", "rtp", "rtsp", "rcv", "rv9", "qsynth", "binary", 0};
 static const char *writers[] =
 {"mp4", "asf", "avi", "binary", "simple", "rawvideo", "rtpdump", 0};
 static const char *metadata_readers[] =
@@ -91,6 +91,7 @@ VC_CONTAINER_STATUS_T rv9_reader_open( VC_CONTAINER_T * );
 VC_CONTAINER_STATUS_T qsynth_reader_open( VC_CONTAINER_T * );
 VC_CONTAINER_STATUS_T simple_reader_open( VC_CONTAINER_T * );
 VC_CONTAINER_STATUS_T simple_writer_open( VC_CONTAINER_T * );
+VC_CONTAINER_STATUS_T fsv_reader_open( VC_CONTAINER_T * );
 VC_CONTAINER_STATUS_T rawvideo_reader_open( VC_CONTAINER_T * );
 VC_CONTAINER_STATUS_T rawvideo_writer_open( VC_CONTAINER_T * );
 VC_CONTAINER_STATUS_T rtpdump_reader_open( VC_CONTAINER_T * );
@@ -120,6 +121,7 @@ static struct
    {"rv9", &rv9_reader_open},
    {"qsynth", &qsynth_reader_open},
    {"simple", &simple_reader_open},
+   {"fsv", &fsv_reader_open},
    {"rawvideo", &rawvideo_reader_open},
    {"rtpdump", &rtpdump_reader_open},
    {0, 0}
