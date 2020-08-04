@@ -1,13 +1,7 @@
-# Container module needs to go in as a plugins so different prefix
-# and install path
-set(CMAKE_SHARED_LIBRARY_PREFIX "")
+set(reader_SOURCE "wav/wav_reader.c")
+set(reader_DEFS "-DENABLE_CONTAINER_READER_WAV")
 
-# Make sure the compiler can find the necessary include files
-include_directories (../..)
-
-add_library(reader_wav ${LIBRARY_TYPE} wav_reader.c)
-
-target_link_libraries(reader_wav containers)
-
-install(TARGETS reader_wav DESTINATION ${PLUGIN_DIR})
-
+option(ENABLE_READER_WAV "Enable WAV reader" OFF)
+if (NOT DISABLE_CONTAINER_ALL OR ENABLE_READER_WAV)
+containers_add_module(reader_wav ${reader_SOURCE} ${reader_DEFS})
+endif ()

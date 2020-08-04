@@ -105,25 +105,63 @@ static struct
    VC_CONTAINER_READER_OPEN_FUNC_T func;
 } reader_entry_points[] =
 {
+#ifdef ENABLE_CONTAINER_READER_ASF
    {"asf", &asf_reader_open},
+#endif
+#ifdef ENABLE_CONTAINER_READER_AVI
    {"avi", &avi_reader_open},
+#endif
+#ifdef ENABLE_CONTAINER_READER_MPGA
    {"mpga", &mpga_reader_open},
+#endif
+#ifdef ENABLE_CONTAINER_READER_MKV
    {"mkv", &mkv_reader_open},
+#endif
+#ifdef ENABLE_CONTAINER_READER_WAV
    {"wav", &wav_reader_open},
+#endif
+#ifdef ENABLE_CONTAINER_READER_MP4
    {"mp4",  &mp4_reader_open},
+#endif
+#ifdef ENABLE_CONTAINER_READER_FLV
    {"flv",  &flv_reader_open},
+#endif
+#ifdef ENABLE_CONTAINER_READER_PS
    {"ps",  &ps_reader_open},
+#endif
+#ifdef ENABLE_CONTAINER_READER_TS
    {"ts",  &ts_reader_open},
+#endif
+#ifdef ENABLE_CONTAINER_READER_BINARY
    {"binary",  &binary_reader_open},
+#endif
+#ifdef ENABLE_CONTAINER_READER_RTP
    {"rtp",  &rtp_reader_open},
+#endif
+#ifdef ENABLE_CONTAINER_READER_RTSP
    {"rtsp", &rtsp_reader_open},
+#endif
+#ifdef ENABLE_CONTAINER_READER_RCV
    {"rcv", &rcv_reader_open},
+#endif
+#ifdef ENABLE_CONTAINER_READER_RV9
    {"rv9", &rv9_reader_open},
+#endif
+#ifdef ENABLE_CONTAINER_READER_QSYNTH
    {"qsynth", &qsynth_reader_open},
+#endif
+#ifdef ENABLE_CONTAINER_READER_SIMPLE
    {"simple", &simple_reader_open},
+#endif
+#ifdef ENABLE_CONTAINER_READER_FSV
    {"fsv", &fsv_reader_open},
+#endif
+#ifdef ENABLE_CONTAINER_READER_RAWVIDEO
    {"rawvideo", &rawvideo_reader_open},
+#endif
+#ifdef ENABLE_CONTAINER_READER_RTPDUMP
    {"rtpdump", &rtpdump_reader_open},
+#endif
    {0, 0}
 };
 
@@ -133,7 +171,9 @@ static struct
    VC_CONTAINER_READER_OPEN_FUNC_T func;
 } metadata_reader_entry_points[] =
 {
+#ifdef ENABLE_CONTAINER_READER_METADATA_ID3
    {"id3", &id3_metadata_reader_open},
+#endif
    {0, 0}
 };
 
@@ -143,12 +183,24 @@ static struct
    VC_CONTAINER_WRITER_OPEN_FUNC_T func;
 } writer_entry_points[] =
 {
+#ifdef ENABLE_CONTAINER_WRITER_AVI
    {"avi", &avi_writer_open},
+#endif
+#ifdef ENABLE_CONTAINER_WRITER_MP4
    {"mp4", &mp4_writer_open},
+#endif
+#ifdef ENABLE_CONTAINER_WRITER_BINARY
    {"binary", &binary_writer_open},
+#endif
+#ifdef ENABLE_CONTAINER_WRITER_SIMPLE
    {"simple", &simple_writer_open},
+#endif
+#ifdef ENABLE_CONTAINER_WRITER_RAWVIDEO
    {"rawvideo", &rawvideo_writer_open},
+#endif
+#ifdef ENABLE_CONTAINER_WRITER_RTPDUMP
    {"rtpdump", &rtpdump_writer_open},
+#endif
    {0, 0}
 };
 #endif /* defined(ENABLE_CONTAINERS_STANDALONE) */

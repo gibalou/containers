@@ -1,13 +1,7 @@
-# Container module needs to go in as a plugins so different prefix
-# and install path
-set(CMAKE_SHARED_LIBRARY_PREFIX "")
+set(reader_SOURCE "rcv/rcv_reader.c")
+set(reader_DEFS "-DENABLE_CONTAINER_READER_RCV")
 
-# Make sure the compiler can find the necessary include files
-include_directories (../..)
-
-add_library(reader_rcv ${LIBRARY_TYPE} rcv_reader.c)
-
-target_link_libraries(reader_rcv containers)
-
-install(TARGETS reader_rcv DESTINATION ${PLUGIN_DIR})
-
+option(ENABLE_READER_RCV "Enable RCV reader" OFF)
+if (NOT DISABLE_CONTAINER_ALL OR ENABLE_READER_RCV)
+containers_add_module(reader_rcv ${reader_SOURCE} ${reader_DEFS})
+endif ()

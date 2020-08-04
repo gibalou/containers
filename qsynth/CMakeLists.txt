@@ -1,13 +1,7 @@
-# Container module needs to go in as a plugins so different prefix
-# and install path
-set(CMAKE_SHARED_LIBRARY_PREFIX "")
+set(reader_SOURCE "qsynth/qsynth_reader.c")
+set(reader_DEFS "-DENABLE_CONTAINER_READER_QSYNTH")
 
-# Make sure the compiler can find the necessary include files
-include_directories (../..)
-
-add_library(reader_qsynth ${LIBRARY_TYPE} qsynth_reader.c)
-
-target_link_libraries(reader_qsynth containers)
-
-install(TARGETS reader_qsynth DESTINATION ${PLUGIN_DIR})
-
+option(ENABLE_READER_QSYNTH "Enable QSYNTH reader" OFF)
+if (NOT DISABLE_CONTAINER_ALL OR ENABLE_READER_QSYNTH)
+containers_add_module(reader_qsynth ${reader_SOURCE} ${reader_DEFS})
+endif ()

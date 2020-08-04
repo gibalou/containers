@@ -141,13 +141,24 @@ static VC_CONTAINER_IO_T *vc_container_io_open_core( const char *uri, VC_CONTAIN
    if (b_open)
    {
       /* Open the actual i/o module */
+      status = VC_CONTAINER_ERROR_UNSUPPORTED_OPERATION;
+
+#ifdef ENABLE_CONTAINER_IO_NULL
       status = vc_container_io_null_open(p_ctx, uri, mode);
+#endif
+#ifdef ENABLE_CONTAINER_IO_NET
       if(status) status = vc_container_io_net_open(p_ctx, uri, mode);
+#endif
+#ifdef ENABLE_CONTAINER_IO_PKTFILE
       if(status) status = vc_container_io_pktfile_open(p_ctx, uri, mode);
+#endif
 #ifdef ENABLE_CONTAINER_IO_HTTP
       if(status) status = vc_container_io_http_open(p_ctx, uri, mode);
 #endif
+#ifdef ENABLE_CONTAINER_IO_FILE
       if(status) status = vc_container_io_file_open(p_ctx, uri, mode);
+#endif
+
       if(status != VC_CONTAINER_SUCCESS) goto error;
 
       if(!p_ctx->pf_seek || (p_ctx->capabilities & VC_CONTAINER_IO_CAPS_CANT_SEEK))

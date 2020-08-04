@@ -1,18 +1,14 @@
-# Container module needs to go in as a plugins so different prefix
-# and install path
-set(CMAKE_SHARED_LIBRARY_PREFIX "")
+set(reader_SOURCE "simple/simple_reader.c")
+set(reader_DEFS "-DENABLE_CONTAINER_READER_SIMPLE")
+set(writer_SOURCE "simple/simple_writer.c")
+set(writer_DEFS "-DENABLE_CONTAINER_WRITER_SIMPLE")
 
-# Make sure the compiler can find the necessary include files
-include_directories (../..)
+option(ENABLE_READER_SIMPLE "Enable SIMPLE reader" OFF)
+if (NOT DISABLE_CONTAINER_ALL OR ENABLE_READER_SIMPLE)
+containers_add_module(reader_simple ${reader_SOURCE} ${reader_DEFS})
+endif ()
 
-add_library(reader_simple ${LIBRARY_TYPE} simple_reader.c)
-
-target_link_libraries(reader_simple containers)
-
-install(TARGETS reader_simple DESTINATION ${PLUGIN_DIR})
-
-add_library(writer_simple ${LIBRARY_TYPE} simple_writer.c)
-
-target_link_libraries(writer_simple containers)
-
-install(TARGETS writer_simple DESTINATION ${PLUGIN_DIR})
+option(ENABLE_WRITER_SIMPLE "Enable SIMPLE writer" OFF)
+if (NOT DISABLE_CONTAINER_ALL OR ENABLE_WRITER_SIMPLE)
+containers_add_module(writer_simple ${writer_SOURCE} ${writer_DEFS})
+endif ()

@@ -1,13 +1,7 @@
-# Container module needs to go in as a plugins so different prefix
-# and install path
-set(CMAKE_SHARED_LIBRARY_PREFIX "")
+set(reader_SOURCE "mkv/matroska_reader.c")
+set(reader_DEFS "-DENABLE_CONTAINER_READER_MKV")
 
-# Make sure the compiler can find the necessary include files
-include_directories (../..)
-
-add_library(reader_mkv ${LIBRARY_TYPE} matroska_reader.c)
-
-target_link_libraries(reader_mkv containers)
-
-install(TARGETS reader_mkv DESTINATION ${PLUGIN_DIR})
-
+option(ENABLE_READER_MKV "Enable MKV reader" OFF)
+if (NOT DISABLE_CONTAINER_ALL OR ENABLE_READER_MKV)
+containers_add_module(reader_mkv ${reader_SOURCE} ${reader_DEFS})
+endif ()

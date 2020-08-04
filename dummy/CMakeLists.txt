@@ -1,12 +1,7 @@
-# Container module needs to go in as a plugins so different prefix
-# and install path
-set(CMAKE_SHARED_LIBRARY_PREFIX "")
+set(writer_SOURCE "dummy/dummy_writer.c")
+set(writer_DEFS "-DENABLE_CONTAINER_WRITER_DUMMY")
 
-# Make sure the compiler can find the necessary include files
-include_directories (../..)
-
-add_library(writer_dummy ${LIBRARY_TYPE} dummy_writer.c)
-
-target_link_libraries(writer_dummy containers)
-
-install(TARGETS writer_dummy DESTINATION ${PLUGIN_DIR})
+option(ENABLE_WRITER_DUMMY "Enable DUMMY writer" OFF)
+if (NOT DISABLE_CONTAINER_ALL OR ENABLE_WRITER_DUMMY)
+containers_add_module(writer_dummy ${writer_SOURCE} ${writer_DEFS})
+endif ()

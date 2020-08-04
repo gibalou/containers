@@ -1,19 +1,14 @@
-# Container module needs to go in as a plugins so different prefix
-# and install path
-set(CMAKE_SHARED_LIBRARY_PREFIX "")
+set(reader_SOURCE "mp4/mp4_reader.c")
+set(reader_DEFS "-DENABLE_CONTAINER_READER_MP4")
+set(writer_SOURCE "mp4/mp4_writer.c")
+set(writer_DEFS "-DENABLE_CONTAINER_WRITER_MP4")
 
-# Make sure the compiler can find the necessary include files
-include_directories (../..)
+option(ENABLE_READER_MP4 "Enable MP4 reader" OFF)
+if (NOT DISABLE_CONTAINER_ALL OR ENABLE_READER_MP4)
+containers_add_module(reader_mp4 ${reader_SOURCE} ${reader_DEFS})
+endif ()
 
-add_library(reader_mp4 ${LIBRARY_TYPE} mp4_reader.c)
-
-target_link_libraries(reader_mp4 containers)
-
-install(TARGETS reader_mp4 DESTINATION ${PLUGIN_DIR})
-
-add_library(writer_mp4 ${LIBRARY_TYPE} mp4_writer.c)
-
-target_link_libraries(writer_mp4 containers)
-
-install(TARGETS writer_mp4 DESTINATION ${PLUGIN_DIR})
-
+option(ENABLE_WRITER_MP4 "Enable MP4 writer" OFF)
+if (NOT DISABLE_CONTAINER_ALL OR ENABLE_WRITER_MP4)
+containers_add_module(writer_mp4 ${writer_SOURCE} ${writer_DEFS})
+endif ()

@@ -1,13 +1,7 @@
-# Container module needs to go in as a plugins so different prefix
-# and install path
-set(CMAKE_SHARED_LIBRARY_PREFIX "")
+set(reader_SOURCE "mpga/mpga_reader.c")
+set(reader_DEFS "-DENABLE_CONTAINER_READER_MPGA")
 
-# Make sure the compiler can find the necessary include files
-include_directories (../..)
-
-add_library(reader_mpga ${LIBRARY_TYPE} mpga_reader.c)
-
-target_link_libraries(reader_mpga containers)
-
-install(TARGETS reader_mpga DESTINATION ${PLUGIN_DIR})
-
+option(ENABLE_READER_MPGA "Enable MPEG audio reader" OFF)
+if (NOT DISABLE_CONTAINER_ALL OR ENABLE_READER_MPGA)
+containers_add_module(reader_mpga ${reader_SOURCE} ${reader_DEFS})
+endif ()

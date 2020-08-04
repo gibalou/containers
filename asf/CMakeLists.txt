@@ -1,19 +1,14 @@
-# Container module needs to go in as a plugins so different prefix
-# and install path
-set(CMAKE_SHARED_LIBRARY_PREFIX "")
+set(reader_SOURCE "asf/asf_reader.c")
+set(reader_DEFS "-DENABLE_CONTAINER_READER_ASF")
+set(writer_SOURCE "asf/asf_writer.c")
+set(writer_DEFS "-DENABLE_CONTAINER_WRITER_ASF")
 
-# Make sure the compiler can find the necessary include files
-include_directories (../..)
+option(ENABLE_READER_ASF "Enable ASF reader" OFF)
+if (NOT DISABLE_CONTAINER_ALL OR ENABLE_READER_ASF)
+containers_add_module(reader_asf ${reader_SOURCE} ${reader_DEFS})
+endif ()
 
-add_library(reader_asf ${LIBRARY_TYPE} asf_reader.c)
-
-target_link_libraries(reader_asf containers)
-
-install(TARGETS reader_asf DESTINATION ${PLUGIN_DIR})
-
-add_library(writer_asf ${LIBRARY_TYPE} asf_writer.c)
-
-target_link_libraries(writer_asf containers)
-
-install(TARGETS writer_asf DESTINATION ${PLUGIN_DIR})
-
+option(ENABLE_WRITER_ASF "Enable ASF writer" OFF)
+if (NOT DISABLE_CONTAINER_ALL OR ENABLE_WRITER_ASF)
+containers_add_module(writer_asf ${writer_SOURCE} ${writer_DEFS})
+endif ()

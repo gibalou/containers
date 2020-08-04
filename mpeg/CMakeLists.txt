@@ -1,15 +1,14 @@
-# Container module needs to go in as a plugins so different prefix
-# and install path
-set(CMAKE_SHARED_LIBRARY_PREFIX "")
+set(reader_ps_SOURCE "mpeg/ps_reader.c")
+set(reader_ps_DEFS "-DENABLE_CONTAINER_READER_PS")
+set(reader_ts_SOURCE "mpeg/ts_reader.c")
+set(reader_ts_DEFS "-DENABLE_CONTAINER_READER_TS")
 
-# Make sure the compiler can find the necessary include files
-include_directories (../..)
+option(ENABLE_READER_PS "Enable MPEG PS reader" OFF)
+if (NOT DISABLE_CONTAINER_ALL OR ENABLE_READER_PS)
+containers_add_module(reader_ps ${reader_ps_SOURCE} ${reader_ps_DEFS})
+endif ()
 
-add_library(reader_ps ${LIBRARY_TYPE} ps_reader.c)
-add_library(reader_ts ${LIBRARY_TYPE} ts_reader.c)
-
-target_link_libraries(reader_ps containers)
-target_link_libraries(reader_ts containers)
-
-install(TARGETS reader_ps DESTINATION ${PLUGIN_DIR})
-install(TARGETS reader_ts DESTINATION ${PLUGIN_DIR})
+option(ENABLE_READER_TS "Enable MPEG TS reader" OFF)
+if (NOT DISABLE_CONTAINER_ALL OR ENABLE_READER_TS)
+containers_add_module(reader_ts ${reader_ts_SOURCE} ${reader_ts_DEFS})
+endif ()

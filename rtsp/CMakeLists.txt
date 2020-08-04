@@ -1,14 +1,7 @@
-# Container module needs to go in as a plugins so different prefix
-# and install path
-set(CMAKE_SHARED_LIBRARY_PREFIX "")
+set(reader_SOURCE "rtsp/rtsp_reader.c")
+set(reader_DEFS "-DENABLE_CONTAINER_READER_RTSP")
 
-# Make sure the compiler can find the necessary include files
-include_directories (../..)
-
-set(rtsp_SRCS ${rtsp_SRCS} rtsp_reader.c)
-add_library(reader_rtsp ${LIBRARY_TYPE} ${rtsp_SRCS})
-
-target_link_libraries(reader_rtsp containers)
-
-install(TARGETS reader_rtsp DESTINATION ${PLUGIN_DIR})
-
+option(ENABLE_READER_RTSP "Enable RTSP reader" OFF)
+if (NOT DISABLE_CONTAINER_ALL OR ENABLE_READER_RTSP)
+containers_add_module(reader_rtsp ${reader_SOURCE} ${reader_DEFS})
+endif ()

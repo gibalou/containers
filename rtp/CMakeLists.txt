@@ -1,17 +1,7 @@
-# Container module needs to go in as a plugins so different prefix
-# and install path
-set(CMAKE_SHARED_LIBRARY_PREFIX "")
+set(reader_SOURCE "rtp/rtp_reader.c rtp/rtp_h264.c rtp/rtp_mpeg4.c rtp/rtp_base64.c")
+set(reader_DEFS "-DENABLE_CONTAINER_READER_RTP")
 
-# Make sure the compiler can find the necessary include files
-include_directories (../..)
-
-set(rtp_SRCS ${rtp_SRCS} rtp_reader.c)
-set(rtp_SRCS ${rtp_SRCS} rtp_h264.c)
-set(rtp_SRCS ${rtp_SRCS} rtp_mpeg4.c)
-set(rtp_SRCS ${rtp_SRCS} rtp_base64.c)
-add_library(reader_rtp ${LIBRARY_TYPE} ${rtp_SRCS})
-
-target_link_libraries(reader_rtp containers)
-
-install(TARGETS reader_rtp DESTINATION ${PLUGIN_DIR})
-
+option(ENABLE_READER_RTP "Enable RTP reader" OFF)
+if (NOT DISABLE_CONTAINER_ALL OR ENABLE_READER_RTP)
+containers_add_module(reader_rtp ${reader_SOURCE} ${reader_DEFS})
+endif ()

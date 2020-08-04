@@ -1,13 +1,7 @@
-# Container module needs to go in as a plugins so different prefix
-# and install path
-set(CMAKE_SHARED_LIBRARY_PREFIX "")
+set(reader_SOURCE "rv9/rv9_reader.c")
+set(reader_DEFS "-DENABLE_CONTAINER_READER_RV9")
 
-# Make sure the compiler can find the necessary include files
-include_directories (../..)
-
-add_library(reader_rv9 ${LIBRARY_TYPE} rv9_reader.c)
-
-target_link_libraries(reader_rv9 containers)
-
-install(TARGETS reader_rv9 DESTINATION ${PLUGIN_DIR})
-
+option(ENABLE_READER_RV9 "Enable RV9 reader" OFF)
+if (NOT DISABLE_CONTAINER_ALL OR ENABLE_READER_RV9)
+containers_add_module(reader_rv9 ${reader_SOURCE} ${reader_DEFS})
+endif ()

@@ -1,13 +1,7 @@
-# Container module needs to go in as a plugins so different prefix
-# and install path
-set(CMAKE_SHARED_LIBRARY_PREFIX "")
+set(reader_SOURCE "flash/flv_reader.c")
+set(reader_DEFS "-DENABLE_CONTAINER_READER_FLV")
 
-# Make sure the compiler can find the necessary include files
-include_directories (../..)
-
-add_library(reader_flv ${LIBRARY_TYPE} flv_reader.c)
-
-target_link_libraries(reader_flv containers)
-
-install(TARGETS reader_flv DESTINATION ${PLUGIN_DIR})
-
+option(ENABLE_READER_FLV "Enable FLV reader" OFF)
+if (NOT DISABLE_CONTAINER_ALL OR ENABLE_READER_FLV)
+containers_add_module(reader_flv ${reader_SOURCE} ${reader_DEFS})
+endif ()
