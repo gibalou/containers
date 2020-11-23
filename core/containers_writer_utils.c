@@ -58,11 +58,17 @@ VC_CONTAINER_STATUS_T vc_container_writer_extraio_create_null(VC_CONTAINER_T *co
 VC_CONTAINER_STATUS_T vc_container_writer_extraio_create_temp(VC_CONTAINER_T *context, VC_CONTAINER_WRITER_EXTRAIO_T *extraio)
 {
    VC_CONTAINER_STATUS_T status = VC_CONTAINER_SUCCESS;
-   unsigned int length = strlen(context->priv->io->uri) + 5;
-   char *uri = malloc(length);
+   const char *io_uri = vc_uri_path(context->priv->io->uri_parts);
+   unsigned int length;
+   char *uri;
+
+   /* TODO: We ought to properly generate a local uri if not using a file io */
+   if(!io_uri) io_uri = context->priv->io->uri;
+   length = strlen(io_uri) + 5;
+   uri = malloc(length);
    if(!uri) return VC_CONTAINER_ERROR_OUT_OF_MEMORY;
 
-   snprintf(uri, length, "%s.tmp", context->priv->io->uri);
+   snprintf(uri, length, "%s.tmp", io_uri);
    status = vc_container_writer_extraio_create(context, uri, extraio);
    free(uri);
    extraio->temp = true;
