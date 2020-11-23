@@ -1063,6 +1063,32 @@ static VC_CONTAINER_STATUS_T mp4_write_box_soun_devc( VC_CONTAINER_T *p_ctx )
    return STREAM_STATUS(p_ctx);
 }
 
+static VC_CONTAINER_STATUS_T mp4_write_box_soun_dops( VC_CONTAINER_T *p_ctx )
+{
+   VC_CONTAINER_MODULE_T *module = p_ctx->priv->module;
+   VC_CONTAINER_TRACK_T *track = p_ctx->tracks[module->current_track];
+   uint32_t size = 8 + (track->format->extradata_size ? track->format->extradata_size : 11);
+
+   WRITE_U32(p_ctx, size, "size");
+   WRITE_FOURCC(p_ctx, VC_FOURCC('d','O','p','s'), "type");
+
+   if(track->format->extradata_size)
+   {
+      WRITE_BYTES(p_ctx, track->format->extradata, track->format->extradata_size);
+      return STREAM_STATUS(p_ctx);
+   }
+
+   /* If no extra data given, just make up some default ones.
+    * See https://www.opus-codec.org/docs/opus_in_isobmff.html#4.3.2 */
+   WRITE_U8(p_ctx, 0, "version");
+   WRITE_U8(p_ctx, track->format->type->audio.channels, "OutputChannelCount");
+   WRITE_U16(p_ctx, 0, "PreSkip");
+   WRITE_U32(p_ctx, track->format->type->audio.sample_rate, "InputSampleRate");
+   WRITE_U16(p_ctx, 0, "OutputGain");
+   WRITE_U8(p_ctx, 0, "ChannelMapping");
+   return STREAM_STATUS(p_ctx);
+}
+
 /*****************************************************************************/
 static VC_CONTAINER_STATUS_T mp4_write_box_soun( VC_CONTAINER_T *p_ctx )
 {
@@ -1112,6 +1138,8 @@ static VC_CONTAINER_STATUS_T mp4_write_box_soun( VC_CONTAINER_T *p_ctx )
    case VC_CONTAINER_CODEC_MP4A:
    case VC_CONTAINER_CODEC_MPGA:
       return mp4_write_box(p_ctx, MP4_BOX_TYPE_ESDS);
+   case VC_CONTAINER_CODEC_OPUS:
+      return mp4_write_box_soun_dops(p_ctx);
    default: break;
    }
 
@@ -1243,12 +1271,14 @@ static VC_CONTAINER_STATUS_T mp4_writer_add_track( VC_CONTAINER_T *p_ctx, VC_CON
    case VC_CONTAINER_CODEC_EVRC:   type = VC_FOURCC('s','e','v','c'); break;
    case VC_CONTAINER_CODEC_MP4A:   type = VC_FOURCC('m','p','4','a'); break;
    case VC_CONTAINER_CODEC_MPGA:   type = VC_FOURCC('m','p','4','a'); break;
+   case VC_CONTAINER_CODEC_OPUS:   type = VC_FOURCC('O','p','u','s'); break;
 
    case VC_CONTAINER_CODEC_MP4V:   type = VC_FOURCC('m','p','4','v'); break;
    case VC_CONTAINER_CODEC_JPEG:   type = VC_FOURCC('m','p','4','v'); break;
    case VC_CONTAINER_CODEC_H263:   type = VC_FOURCC('s','2','6','3'); break;
    case VC_CONTAINER_CODEC_H264:
-      if(format->codec_variant == VC_FOURCC('a','v','c','C')) type = VC_FOURCC('a','v','c','1'); break;
+      if(format->codec_variant == VC_FOURCC('a','v','c','C')) type = VC_FOURCC('a','v','c','1');
+      break;
    case VC_CONTAINER_CODEC_MJPEG:  type = VC_FOURCC('j','p','e','g'); break;
    case VC_CONTAINER_CODEC_MJPEGA: type = VC_FOURCC('m','j','p','a'); break;
    case VC_CONTAINER_CODEC_MJPEGB: type = VC_FOURCC('m','j','p','b'); break;

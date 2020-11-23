@@ -202,6 +202,7 @@ static VC_CONTAINER_STATUS_T mp4_read_box_soun_damr( VC_CONTAINER_T *p_ctx, int6
 static VC_CONTAINER_STATUS_T mp4_read_box_soun_dawp( VC_CONTAINER_T *p_ctx, int64_t size );
 static VC_CONTAINER_STATUS_T mp4_read_box_soun_devc( VC_CONTAINER_T *p_ctx, int64_t size );
 static VC_CONTAINER_STATUS_T mp4_read_box_soun_wave( VC_CONTAINER_T *p_ctx, int64_t size );
+static VC_CONTAINER_STATUS_T mp4_read_box_soun_dops( VC_CONTAINER_T *p_ctx, int64_t size );
 static VC_CONTAINER_STATUS_T mp4_read_box_sinf( VC_CONTAINER_T *p_ctx, int64_t size );
 static VC_CONTAINER_STATUS_T mp4_read_box_frma( VC_CONTAINER_T *p_ctx, int64_t size );
 static VC_CONTAINER_STATUS_T mp4_read_box_schm( VC_CONTAINER_T *p_ctx, int64_t size );
@@ -267,6 +268,7 @@ static struct {
    {MP4_BOX_TYPE_DAWP, mp4_read_box_soun_dawp, MP4_BOX_TYPE_SOUN},
    {MP4_BOX_TYPE_DEVC, mp4_read_box_soun_devc, MP4_BOX_TYPE_SOUN},
    {MP4_BOX_TYPE_WAVE, mp4_read_box_soun_wave, MP4_BOX_TYPE_SOUN},
+   {MP4_BOX_TYPE_DOPS, mp4_read_box_soun_dops, MP4_BOX_TYPE_SOUN},
    {MP4_BOX_TYPE_ESDS, mp4_read_box_esds, MP4_BOX_TYPE_SOUN},
    {MP4_BOX_TYPE_SINF, mp4_read_box_sinf, MP4_BOX_TYPE_VIDE},
    {MP4_BOX_TYPE_SINF, mp4_read_box_sinf, MP4_BOX_TYPE_SOUN},
@@ -307,6 +309,7 @@ static struct {
   {VC_FOURCC('u','l','a','w'), VC_CONTAINER_CODEC_MULAW, 1},
   {VC_FOURCC('t','w','o','s'), VC_CONTAINER_CODEC_PCM_SIGNED_BE, 1},
   {VC_FOURCC('s','o','w','t'), VC_CONTAINER_CODEC_PCM_SIGNED_LE, 1},
+  {VC_FOURCC('O','p','u','s'), VC_CONTAINER_CODEC_OPUS, 0},
 
   {0, 0},
 };
@@ -1563,6 +1566,22 @@ static VC_CONTAINER_STATUS_T mp4_read_box_soun_devc( VC_CONTAINER_T *p_ctx, int6
 static VC_CONTAINER_STATUS_T mp4_read_box_soun_wave( VC_CONTAINER_T *p_ctx, int64_t size )
 {
    return mp4_read_boxes( p_ctx, size, MP4_BOX_TYPE_SOUN);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_read_box_soun_dops( VC_CONTAINER_T *p_ctx, int64_t size )
+{
+   VC_CONTAINER_MODULE_T *module = p_ctx->priv->module;
+   VC_CONTAINER_TRACK_T *track = p_ctx->tracks[module->current_track];
+   VC_CONTAINER_STATUS_T status;
+
+   if (size <= 0) return STREAM_STATUS(p_ctx);
+
+   status = vc_container_track_allocate_extradata(p_ctx, track, (unsigned int)size);
+   if(status != VC_CONTAINER_SUCCESS) return status;
+   track->format->extradata_size = READ_BYTES(p_ctx, track->format->extradata, size);
+
+   return STREAM_STATUS(p_ctx);
 }
 
 /*****************************************************************************/

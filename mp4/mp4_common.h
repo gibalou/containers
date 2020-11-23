@@ -78,6 +78,7 @@ typedef enum {
    MP4_BOX_TYPE_DAWP              = VC_FOURCC('d','a','w','p'),
    MP4_BOX_TYPE_DEVC              = VC_FOURCC('d','e','v','c'),
    MP4_BOX_TYPE_WAVE              = VC_FOURCC('w','a','v','e'),
+   MP4_BOX_TYPE_DOPS              = VC_FOURCC('d','O','p','s'),
    MP4_BOX_TYPE_MVEX              = VC_FOURCC('m','v','e','x'),
    MP4_BOX_TYPE_TREX              = VC_FOURCC('t','r','e','x'),
    MP4_BOX_TYPE_TFHD              = VC_FOURCC('t','f','h','d'),
