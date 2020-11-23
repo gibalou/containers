@@ -79,7 +79,6 @@ typedef struct VC_CONTAINER_MODULE_T
    MP4_BRAND_T brand;
 
    VC_CONTAINER_TRACK_T *tracks[MP4_TRACKS_MAX];
-   bool tracks_add_done;
 
    VC_CONTAINER_WRITER_EXTRAIO_T null;
 
@@ -1253,6 +1252,25 @@ static VC_CONTAINER_STATUS_T mp4_writer_close( VC_CONTAINER_T *p_ctx )
 }
 
 /*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_writer_add_track_done( VC_CONTAINER_T *p_ctx )
+{
+   VC_CONTAINER_MODULE_T *module = p_ctx->priv->module;
+   VC_CONTAINER_STATUS_T status = VC_CONTAINER_SUCCESS;
+
+   /* We need to find out the size of the object we're going to write it. */
+   if(!vc_container_writer_extraio_enable(p_ctx, &module->null))
+   {
+      int64_t size = p_ctx->size - module->moov_size;
+      status = mp4_write_box(p_ctx, MP4_BOX_TYPE_MOOV);
+      module->moov_size = STREAM_POSITION(p_ctx);
+      p_ctx->size = size + module->moov_size;
+   }
+   vc_container_writer_extraio_disable(p_ctx, &module->null);
+
+   return status;
+}
+
+/*****************************************************************************/
 static VC_CONTAINER_STATUS_T mp4_writer_add_track( VC_CONTAINER_T *p_ctx, VC_CONTAINER_ES_FORMAT_T *format )
 {
    VC_CONTAINER_STATUS_T status;
@@ -1314,6 +1332,7 @@ static VC_CONTAINER_STATUS_T mp4_writer_add_track( VC_CONTAINER_T *p_ctx, VC_CON
    track->priv->module->sample_table[MP4_SAMPLE_TABLE_CTTS].entry_size = 8;
 
    p_ctx->tracks_num++;
+   mp4_writer_add_track_done(p_ctx);
    return VC_CONTAINER_SUCCESS;
 
  error:
@@ -1322,42 +1341,16 @@ static VC_CONTAINER_STATUS_T mp4_writer_add_track( VC_CONTAINER_T *p_ctx, VC_CON
 }
 
 /*****************************************************************************/
-static VC_CONTAINER_STATUS_T mp4_writer_add_track_done( VC_CONTAINER_T *p_ctx )
-{
-   VC_CONTAINER_MODULE_T *module = p_ctx->priv->module;
-   VC_CONTAINER_STATUS_T status = VC_CONTAINER_SUCCESS;
-   if(module->tracks_add_done) return status;
-
-   /* We need to find out the size of the object we're going to write it. */
-   if(!vc_container_writer_extraio_enable(p_ctx, &module->null))
-   {
-      status = mp4_write_box(p_ctx, MP4_BOX_TYPE_MOOV);
-      module->moov_size = STREAM_POSITION(p_ctx);
-      p_ctx->size = module->moov_size;
-   }
-   vc_container_writer_extraio_disable(p_ctx, &module->null);
-
-   if(status == VC_CONTAINER_SUCCESS) module->tracks_add_done = true;
-   return status;
-}
-
-/*****************************************************************************/
 static VC_CONTAINER_STATUS_T mp4_writer_control( VC_CONTAINER_T *p_ctx, VC_CONTAINER_CONTROL_T operation, va_list args )
 {
-   VC_CONTAINER_MODULE_T *module = p_ctx->priv->module;
-
    switch(operation)
    {
    case VC_CONTAINER_CONTROL_TRACK_ADD:
       {
          VC_CONTAINER_ES_FORMAT_T *p_format =
             (VC_CONTAINER_ES_FORMAT_T *)va_arg( args, VC_CONTAINER_ES_FORMAT_T * );
-         if(module->tracks_add_done) return VC_CONTAINER_ERROR_UNSUPPORTED_OPERATION;
          return mp4_writer_add_track(p_ctx, p_format);
       }
-
-   case VC_CONTAINER_CONTROL_TRACK_ADD_DONE:
-      return mp4_writer_add_track_done(p_ctx);
 
    default: return VC_CONTAINER_ERROR_UNSUPPORTED_OPERATION;
    }
@@ -1416,12 +1409,6 @@ static VC_CONTAINER_STATUS_T mp4_writer_write( VC_CONTAINER_T *p_ctx,
    VC_CONTAINER_PACKET_T *sample = &module->sample;
    VC_CONTAINER_STATUS_T status;
 
-   if(!module->tracks_add_done)
-   {
-      status = mp4_writer_add_track_done(p_ctx);
-      if(status != VC_CONTAINER_SUCCESS) return status;
-   }
-
    if(packet->flags & VC_CONTAINER_PACKET_FLAG_FRAME_START)
       ++module->samples; /* Switching to a new sample */
 
@@ -1448,7 +1435,9 @@ static VC_CONTAINER_STATUS_T mp4_writer_write( VC_CONTAINER_T *p_ctx,
    if(packet->flags & VC_CONTAINER_PACKET_FLAG_FRAME_END)
    {
       status = mp4_writer_write_sample_to_temp(p_ctx, sample);
+      if(status != VC_CONTAINER_SUCCESS) return status;
       status = mp4_writer_add_sample(p_ctx, sample);
+      if(status != VC_CONTAINER_SUCCESS) return status;
    }
 
    return VC_CONTAINER_SUCCESS;
@@ -1482,6 +1471,8 @@ VC_CONTAINER_STATUS_T mp4_writer_open( VC_CONTAINER_T *p_ctx )
    memset(module, 0, sizeof(*module));
    p_ctx->priv->module = module;
    p_ctx->tracks = module->tracks;
+
+   p_ctx->capabilities |= VC_CONTAINER_CAPS_DYNAMIC_TRACK_ADD;
 
    /* Find out which brand we're going write */
    if(!strcasecmp(extension, "3gp")) brand = MP4_BRAND_3GP5;
