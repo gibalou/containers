@@ -125,19 +125,15 @@ VC_CONTAINER_T *vc_container_open_reader( const char *uri, VC_CONTAINER_STATUS_T
 }
 
 /*****************************************************************************/
-VC_CONTAINER_T *vc_container_open_writer( const char *uri, VC_CONTAINER_STATUS_T *p_status,
-   VC_CONTAINER_PROGRESS_REPORT_FUNC_T pfn_progress, void *progress_userdata)
+VC_CONTAINER_T *vc_container_open_writer_with_io( struct VC_CONTAINER_IO_T *io,
+   const char *uri, VC_CONTAINER_STATUS_T *p_status,
+   VC_CONTAINER_PROGRESS_REPORT_FUNC_T pfn_progress, void *progress_userdata )
 {
    VC_CONTAINER_STATUS_T status = VC_CONTAINER_SUCCESS;
    VC_CONTAINER_T *p_ctx = 0;
-   VC_CONTAINER_IO_T *io;
    const char *extension;
    VC_CONTAINER_PARAM_UNUSED(pfn_progress);
    VC_CONTAINER_PARAM_UNUSED(progress_userdata);
-
-   /* Start by opening the URI */
-   io = vc_container_io_open( uri, VC_CONTAINER_IO_MODE_WRITE, &status );
-   if(!io) goto error;
 
    /* Make sure we have enough space available to start writing */
    if(io->max_size && io->max_size < WRITER_SPACE_SAFETY_MARGIN)
@@ -154,6 +150,7 @@ VC_CONTAINER_T *vc_container_open_writer( const char *uri, VC_CONTAINER_STATUS_T
    p_ctx->priv = (VC_CONTAINER_PRIVATE_T *)(p_ctx + 1);
    p_ctx->priv->verbosity = vc_container_log_get_default_verbosity();
    p_ctx->priv->io = io;
+   vc_uri_parse(io->uri_parts, uri);
    p_ctx->priv->uri = io->uri_parts;
    io = NULL; /* io now owned by the context */
 
@@ -174,6 +171,25 @@ error:
    if (p_ctx) vc_container_close(p_ctx);
    p_ctx = NULL;
    goto end;
+}
+
+/*****************************************************************************/
+VC_CONTAINER_T *vc_container_open_writer( const char *uri, VC_CONTAINER_STATUS_T *p_status,
+   VC_CONTAINER_PROGRESS_REPORT_FUNC_T pfn_progress, void *progress_userdata )
+{
+   VC_CONTAINER_IO_T *io;
+   VC_CONTAINER_T *ctx;
+
+   /* Start by opening the URI */
+   io = vc_container_io_open(uri, VC_CONTAINER_IO_MODE_WRITE, p_status);
+   if(!io)
+      return 0;
+
+   ctx = vc_container_open_writer_with_io(io, uri, p_status, pfn_progress, progress_userdata);
+   if (!ctx)
+      vc_container_io_close(io);
+   return ctx;
+
 }
 
 /*****************************************************************************/

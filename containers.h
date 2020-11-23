@@ -470,6 +470,30 @@ VC_CONTAINER_T *vc_container_open_reader_with_io( VC_CONTAINER_IO_T *p_io,
 VC_CONTAINER_T *vc_container_open_writer( const char *psz_uri, VC_CONTAINER_STATUS_T *status,
    VC_CONTAINER_PROGRESS_REPORT_FUNC_T pf_progress, void *progress_userdata);
 
+/** Opens the media container pointed to by the container i/o.
+ * This will create an an instance of a container writer and its associated context.
+ * The context returned will be initialised to sensible values.
+ *
+ * The application will need to add all the media tracks using \ref vc_container_control before
+ * it starts writing data using \ref vc_container_write.
+ *
+ * If the media isn't accessible or recognized, this will return a null pointer as well as
+ * an error code indicating why this failed.
+ *
+ * \param  p_io         Instance of the container i/o to use
+ * \param  psz_uri      Unified Resource Identifier pointing to the media container
+ * \param  status       Returns the status of the operation
+ * \param  pf_progress User provided function pointer to a progess report function. Can be set to
+ *                      null if no progress report is wanted.
+ * \param  progress_userdata User provided pointer that will be passed during the progress report
+ *                      function call.
+ * \return              A pointer to the context of the new instance of the
+ *                      container writer. Returns NULL on failure.
+ */
+VC_CONTAINER_T *vc_container_open_writer_with_io( VC_CONTAINER_IO_T *p_io,
+   const char *psz_uri, VC_CONTAINER_STATUS_T *status,
+   VC_CONTAINER_PROGRESS_REPORT_FUNC_T pf_progress, void *progress_userdata);
+
 /** Closes an instance of a container reader / writer.
  * This will free all the resources associated with the context.
  *
