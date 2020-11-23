@@ -315,6 +315,7 @@ static VC_CONTAINER_STATUS_T mp4_write_box_mvhd( VC_CONTAINER_T *p_ctx )
       VC_CONTAINER_TRACK_T *track = p_ctx->tracks[i];
       VC_CONTAINER_TRACK_MODULE_T *track_module = track->priv->module;
       int64_t track_duration = track_module->last_pts - track_module->first_pts;
+      /* TODO: + last sample duration */
       if(track_duration > p_ctx->duration)
          p_ctx->duration = track_duration;
    }
@@ -689,7 +690,7 @@ static VC_CONTAINER_STATUS_T mp4_write_box_stts( VC_CONTAINER_T *p_ctx )
    VC_CONTAINER_STATUS_T status = VC_CONTAINER_SUCCESS;
    VC_CONTAINER_PACKET_T sample;
    unsigned int entries = 0;
-   int64_t last_dts = 0, delta;
+   int64_t last_dts = 0, delta = 0;
 
    WRITE_U8(p_ctx,  0, "version");
    WRITE_U24(p_ctx, 0, "flags");
@@ -714,13 +715,20 @@ static VC_CONTAINER_STATUS_T mp4_write_box_stts( VC_CONTAINER_T *p_ctx )
 
       delta = sample.dts * MP4_TIMESCALE / 1000000 - last_dts;
       if(delta < 0) delta = 0;
+      last_dts += delta;
+      if(!entries++) goto skip;
       WRITE_U32(p_ctx, 1, "sample_count");
       WRITE_U32(p_ctx, delta, "sample_delta");
-      entries++;
-      last_dts += delta;
 
      skip:
       status = mp4_writer_read_sample_from_temp(p_ctx, &sample);
+   }
+   /* The last entry is always a duplicate of the previous one since we do not know
+    * the duration of the sample */
+   if(entries)
+   {
+      WRITE_U32(p_ctx, 1, "sample_count");
+      WRITE_U32(p_ctx, delta, "sample_delta");
    }
    vc_container_assert(entries == track_module->sample_table[MP4_SAMPLE_TABLE_STTS].entries);
 
