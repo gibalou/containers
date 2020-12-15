@@ -93,6 +93,7 @@ typedef struct VC_CONTAINER_MODULE_T
    VC_CONTAINER_PACKET_T sample;
    int64_t sample_offset;
    int64_t prev_sample_dts;
+   int64_t initial_sample_dts;
 
    int64_t duration;
    /**/
@@ -654,9 +655,16 @@ static VC_CONTAINER_STATUS_T mp4_writer_write_sample_to_temp( VC_CONTAINER_T *p_
    VC_CONTAINER_PACKET_T *packet)
 {
    VC_CONTAINER_MODULE_T *module = p_ctx->priv->module;
-   int32_t dts_diff = packet->dts - module->prev_sample_dts;
    uint8_t keyframe = (packet->flags & VC_CONTAINER_PACKET_FLAG_KEYFRAME) ? 0x80 : 0;
    uint8_t sd_index = ((packet->flags >> 24) & 0x70);
+   int32_t dts_diff;
+
+   if(module->initial_sample_dts == VC_CONTAINER_TIME_UNKNOWN)
+   {
+      module->initial_sample_dts = packet->dts;
+      module->prev_sample_dts = packet->dts;
+   }
+   dts_diff = packet->dts - module->prev_sample_dts;
 
    vc_container_io_write_be_uint32(module->temp.io, packet->size);
    vc_container_io_write_be_uint32(module->temp.io, dts_diff);
@@ -706,7 +714,7 @@ static VC_CONTAINER_STATUS_T mp4_write_box_stts( VC_CONTAINER_T *p_ctx )
 
    /* Go through all the samples written */
    vc_container_io_seek(module->temp.io, INT64_C(0));
-   sample.dts = 0;
+   sample.dts = module->initial_sample_dts;
 
    status = mp4_writer_read_sample_from_temp(p_ctx, &sample);
    while(status == VC_CONTAINER_SUCCESS)
@@ -1534,6 +1542,8 @@ VC_CONTAINER_STATUS_T mp4_writer_open( VC_CONTAINER_T *p_ctx )
    p_ctx->priv->pf_close = mp4_writer_close;
    p_ctx->priv->pf_write = mp4_writer_write;
    p_ctx->priv->pf_control = mp4_writer_control;
+
+   module->initial_sample_dts = VC_CONTAINER_TIME_UNKNOWN;
    return VC_CONTAINER_SUCCESS;
 
  error:
