@@ -197,6 +197,7 @@ static VC_CONTAINER_STATUS_T mp4_read_box_pssh( VC_CONTAINER_T *p_ctx, int64_t s
 
 static VC_CONTAINER_STATUS_T mp4_read_box_esds( VC_CONTAINER_T *p_ctx, int64_t size );
 static VC_CONTAINER_STATUS_T mp4_read_box_vide_avcC( VC_CONTAINER_T *p_ctx, int64_t size );
+static VC_CONTAINER_STATUS_T mp4_read_box_vide_hvcC( VC_CONTAINER_T *p_ctx, int64_t size );
 static VC_CONTAINER_STATUS_T mp4_read_box_vide_d263( VC_CONTAINER_T *p_ctx, int64_t size );
 static VC_CONTAINER_STATUS_T mp4_read_box_soun_damr( VC_CONTAINER_T *p_ctx, int64_t size );
 static VC_CONTAINER_STATUS_T mp4_read_box_soun_dawp( VC_CONTAINER_T *p_ctx, int64_t size );
@@ -262,6 +263,7 @@ static struct {
 
    /* Codec specific boxes */
    {MP4_BOX_TYPE_AVCC, mp4_read_box_vide_avcC, MP4_BOX_TYPE_VIDE},
+   {MP4_BOX_TYPE_HVCC, mp4_read_box_vide_hvcC, MP4_BOX_TYPE_VIDE},
    {MP4_BOX_TYPE_D263, mp4_read_box_vide_d263, MP4_BOX_TYPE_VIDE},
    {MP4_BOX_TYPE_ESDS, mp4_read_box_esds, MP4_BOX_TYPE_VIDE},
    {MP4_BOX_TYPE_DAMR, mp4_read_box_soun_damr, MP4_BOX_TYPE_SOUN},
@@ -288,6 +290,8 @@ static struct {
 {
   {VC_FOURCC('a','v','c','1'), VC_CONTAINER_CODEC_H264, 0},
   {VC_FOURCC('a','v','c','3'), VC_CONTAINER_CODEC_H264, 0},
+  {VC_FOURCC('h','v','c','1'), VC_CONTAINER_CODEC_H265, 0},
+  {VC_FOURCC('h','e','v','1'), VC_CONTAINER_CODEC_H265, 0},
   {VC_FOURCC('m','p','4','v'), VC_CONTAINER_CODEC_MP4V, 0},
   {VC_FOURCC('s','2','6','3'), VC_CONTAINER_CODEC_H263, 0},
   {VC_FOURCC('m','p','e','g'), VC_CONTAINER_CODEC_MP2V, 0},
@@ -1456,7 +1460,27 @@ static VC_CONTAINER_STATUS_T mp4_read_box_vide_avcC( VC_CONTAINER_T *p_ctx, int6
        track->format->codec != VC_FOURCC('e','n','c','v')) || size <= 0)
       return VC_CONTAINER_ERROR_CORRUPTED;
 
-   track->format->codec_variant = VC_FOURCC('a','v','c','C');
+   track->format->codec_variant = VC_CONTAINER_VARIANT_H264_AVC1;
+
+   status = vc_container_track_allocate_extradata(p_ctx, track, (unsigned int)size);
+   if(status != VC_CONTAINER_SUCCESS) return status;
+   track->format->extradata_size = READ_BYTES(p_ctx, track->format->extradata, size);
+
+   return STREAM_STATUS(p_ctx);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_read_box_vide_hvcC( VC_CONTAINER_T *p_ctx, int64_t size )
+{
+   VC_CONTAINER_MODULE_T *module = p_ctx->priv->module;
+   VC_CONTAINER_TRACK_T *track = p_ctx->tracks[module->current_track];
+   VC_CONTAINER_STATUS_T status;
+
+   if((track->format->codec != VC_CONTAINER_CODEC_H265 &&
+       track->format->codec != VC_FOURCC('e','n','c','v')) || size <= 0)
+      return VC_CONTAINER_ERROR_CORRUPTED;
+
+   track->format->codec_variant = VC_CONTAINER_VARIANT_H265_HVC1;
 
    status = vc_container_track_allocate_extradata(p_ctx, track, (unsigned int)size);
    if(status != VC_CONTAINER_SUCCESS) return status;

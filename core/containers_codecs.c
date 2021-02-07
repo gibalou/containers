@@ -135,6 +135,10 @@ static struct {
    {VC_CONTAINER_CODEC_H264,             VC_FOURCC('h','2','6','4')},
    {VC_CONTAINER_CODEC_H264,             VC_FOURCC('A','V','C','1')},
    {VC_CONTAINER_CODEC_H264,             VC_FOURCC('a','v','c','1')},
+   {VC_CONTAINER_CODEC_H265,             VC_FOURCC('H','2','6','5')},
+   {VC_CONTAINER_CODEC_H265,             VC_FOURCC('h','2','6','5')},
+   {VC_CONTAINER_CODEC_H265,             VC_FOURCC('H','V','C','1')},
+   {VC_CONTAINER_CODEC_H265,             VC_FOURCC('h','v','c','1')},
    {VC_CONTAINER_CODEC_SPARK,            VC_FOURCC('F','L','V','1')},
    {VC_CONTAINER_CODEC_SPARK,            VC_FOURCC('f','l','v','1')},
    {VC_CONTAINER_CODEC_UNKNOWN, 0}

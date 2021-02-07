@@ -73,6 +73,7 @@ typedef enum {
    MP4_BOX_TYPE_UUID              = VC_FOURCC('u','u','i','d'),
    MP4_BOX_TYPE_ESDS              = VC_FOURCC('e','s','d','s'),
    MP4_BOX_TYPE_AVCC              = VC_FOURCC('a','v','c','C'),
+   MP4_BOX_TYPE_HVCC              = VC_FOURCC('h','v','c','C'),
    MP4_BOX_TYPE_D263              = VC_FOURCC('d','2','6','3'),
    MP4_BOX_TYPE_DAMR              = VC_FOURCC('d','a','m','r'),
    MP4_BOX_TYPE_DAWP              = VC_FOURCC('d','a','w','p'),

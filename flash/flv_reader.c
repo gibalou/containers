@@ -206,7 +206,7 @@ static VC_CONTAINER_STATUS_T flv_read_videodata_properties(VC_CONTAINER_T *p_ctx
       if(type || size <= 8) return VC_CONTAINER_ERROR_CORRUPTED;
       _SKIP_U24(p_ctx); size-=3;
 
-      track->format->codec_variant = VC_FOURCC('a','v','c','C');
+      track->format->codec_variant = VC_CONTAINER_VARIANT_H264_AVC1;
       status = vc_container_track_allocate_extradata(p_ctx, track, size);
       if(status != VC_CONTAINER_SUCCESS) return status;
       track->format->extradata_size = READ_BYTES(p_ctx, track->format->extradata, size);

@@ -45,6 +45,7 @@ extern "C" {
 #define VC_CONTAINER_CODEC_DIV4        VC_FOURCC('d','i','v','4')
 #define VC_CONTAINER_CODEC_H263        VC_FOURCC('h','2','6','3')
 #define VC_CONTAINER_CODEC_H264        VC_FOURCC('h','2','6','4')
+#define VC_CONTAINER_CODEC_H265        VC_FOURCC('h','2','6','5')
 #define VC_CONTAINER_CODEC_MVC         VC_FOURCC('m','v','c',' ')
 #define VC_CONTAINER_CODEC_WMV1        VC_FOURCC('w','m','v','1')
 #define VC_CONTAINER_CODEC_WMV2        VC_FOURCC('w','m','v','2')
@@ -157,10 +158,17 @@ extern "C" {
 
 /** ISO 14496-10 Annex B byte stream format */
 #define VC_CONTAINER_VARIANT_H264_DEFAULT    0
-/** ISO 14496-15 AVC format (used in mp4/mkv and other containers) */
-#define VC_CONTAINER_VARIANT_H264_AVC1       VC_FOURCC('a','v','c','C')
+/** ISO 14496-15 AVC formats (used in mp4/mkv and other containers) */
+#define VC_CONTAINER_VARIANT_H264_AVC1       VC_FOURCC('a','v','c','1')
+#define VC_CONTAINER_VARIANT_H264_AVC3       VC_FOURCC('a','v','c','3')
 /** Implicitly delineated NAL units without emulation prevention */
 #define VC_CONTAINER_VARIANT_H264_RAW        VC_FOURCC('r','a','w',' ')
+
+/** ISO 28003-2 Annex B byte stream format */
+#define VC_CONTAINER_VARIANT_H265_DEFAULT    0
+/** ISO 14496-15 HEVC formats (used in mp4/mkv and other containers) */
+#define VC_CONTAINER_VARIANT_H265_HVC1       VC_FOURCC('h','v','c','1')
+#define VC_CONTAINER_VARIANT_H265_HEV1       VC_FOURCC('h','e','v','1')
 
 /** MPEG 1/2 Audio - Layer unknown */
 #define VC_CONTAINER_VARIANT_MPGA_DEFAULT    0

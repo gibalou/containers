@@ -984,6 +984,19 @@ static VC_CONTAINER_STATUS_T mp4_write_box_vide_avcC( VC_CONTAINER_T *p_ctx )
 }
 
 /*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_write_box_vide_hvcC( VC_CONTAINER_T *p_ctx )
+{
+   VC_CONTAINER_MODULE_T *module = p_ctx->priv->module;
+   VC_CONTAINER_TRACK_T *track = p_ctx->tracks[module->current_track];
+
+   WRITE_U32(p_ctx, track->format->extradata_size + 8, "size");
+   WRITE_FOURCC(p_ctx, VC_FOURCC('h','v','c','C'), "type");
+   WRITE_BYTES(p_ctx, track->format->extradata, track->format->extradata_size);
+
+   return STREAM_STATUS(p_ctx);
+}
+
+/*****************************************************************************/
 static VC_CONTAINER_STATUS_T mp4_write_box_vide_d263( VC_CONTAINER_T *p_ctx )
 {
    WRITE_U32(p_ctx, 8 + 7, "size");
@@ -1023,8 +1036,13 @@ static VC_CONTAINER_STATUS_T mp4_write_box_vide( VC_CONTAINER_T *p_ctx )
    switch(track->format->codec)
    {
    case VC_CONTAINER_CODEC_H264:
-      return track->priv->module->fourcc == VC_FOURCC('a','v','c','1') ?
+      return (track->priv->module->fourcc == VC_CONTAINER_VARIANT_H264_AVC1 ||
+              track->priv->module->fourcc == VC_CONTAINER_VARIANT_H264_AVC3) ?
          mp4_write_box_vide_avcC(p_ctx) : STREAM_STATUS(p_ctx);
+   case VC_CONTAINER_CODEC_H265:
+      return (track->priv->module->fourcc == VC_CONTAINER_VARIANT_H265_HVC1 ||
+              track->priv->module->fourcc == VC_CONTAINER_VARIANT_H265_HEV1) ?
+         mp4_write_box_vide_hvcC(p_ctx) : STREAM_STATUS(p_ctx);
    case VC_CONTAINER_CODEC_H263: return mp4_write_box_vide_d263(p_ctx);
    case VC_CONTAINER_CODEC_MP4V: return mp4_write_box(p_ctx, MP4_BOX_TYPE_ESDS);
    default: break;
@@ -1303,7 +1321,14 @@ static VC_CONTAINER_STATUS_T mp4_writer_add_track( VC_CONTAINER_T *p_ctx, VC_CON
    case VC_CONTAINER_CODEC_JPEG:   type = VC_FOURCC('m','p','4','v'); break;
    case VC_CONTAINER_CODEC_H263:   type = VC_FOURCC('s','2','6','3'); break;
    case VC_CONTAINER_CODEC_H264:
-      if(format->codec_variant == VC_FOURCC('a','v','c','C')) type = VC_FOURCC('a','v','c','1');
+      if(format->codec_variant != VC_CONTAINER_VARIANT_H264_AVC1 &&
+         format->codec_variant != VC_CONTAINER_VARIANT_H264_AVC3) break;
+      type = format->codec_variant;
+      break;
+   case VC_CONTAINER_CODEC_H265:
+      if(format->codec_variant != VC_CONTAINER_VARIANT_H265_HVC1 &&
+         format->codec_variant != VC_CONTAINER_VARIANT_H265_HEV1) break;
+      type = format->codec_variant;
       break;
    case VC_CONTAINER_CODEC_MJPEG:  type = VC_FOURCC('j','p','e','g'); break;
    case VC_CONTAINER_CODEC_MJPEGA: type = VC_FOURCC('m','j','p','a'); break;
