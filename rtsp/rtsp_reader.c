@@ -99,12 +99,12 @@ o User-Agent header may need updating.
 //#define ENABLE_CONTAINERS_LOG_FORMAT
 //#define ENABLE_CONTAINERS_LOG_FORMAT_VERBOSE
 #define CONTAINER_HELPER_LOG_INDENT(a) 0
-#include "containers/core/containers_private.h"
-#include "containers/core/containers_io_helpers.h"
-#include "containers/core/containers_utils.h"
-#include "containers/core/containers_logging.h"
-#include "containers/core/containers_list.h"
-#include "containers/core/containers_uri.h"
+#include "core/containers_private.h"
+#include "core/containers_io_helpers.h"
+#include "core/containers_utils.h"
+#include "core/containers_logging.h"
+#include "core/containers_list.h"
+#include "core/containers_uri.h"
 
 /******************************************************************************
 Configurable defines and constants.

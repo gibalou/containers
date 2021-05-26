@@ -30,14 +30,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <ctype.h>
 
-#include "containers/containers.h"
-#include "containers/core/containers_common.h"
-#include "containers/core/containers_io.h"
-#include "containers/core/containers_uri.h"
-#include "containers/core/containers_logging.h"
-#include "containers/core/containers_list.h"
-#include "containers/core/containers_utils.h"
-#include "containers/net/net_sockets.h"
+#include "containers.h"
+#include "core/containers_common.h"
+#include "core/containers_io.h"
+#include "core/containers_uri.h"
+#include "core/containers_logging.h"
+#include "core/containers_list.h"
+#include "core/containers_utils.h"
+#include "net/net_sockets.h"
 
 /* Set to 1 if you want to log all HTTP requests */
 #define ENABLE_HTTP_EXTRA_LOGGING 0

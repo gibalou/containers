@@ -29,10 +29,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 #include <stdio.h>
 
-#include "containers/containers.h"
-#include "containers/core/containers_common.h"
-#include "containers/core/containers_io.h"
-#include "containers/core/containers_uri.h"
+#include "containers.h"
+#include "core/containers_common.h"
+#include "core/containers_io.h"
+#include "core/containers_uri.h"
 
 VC_CONTAINER_STATUS_T vc_container_io_null_open( VC_CONTAINER_IO_T *, const char *,
    VC_CONTAINER_IO_MODE_T );

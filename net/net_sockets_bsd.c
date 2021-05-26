@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "net_sockets.h"
 #include "net_sockets_priv.h"
-#include "containers/core/containers_common.h"
+#include "core/containers_common.h"
 
 /*****************************************************************************/
 

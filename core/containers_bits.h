@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef VC_CONTAINERS_BITS_H
 #define VC_CONTAINERS_BITS_H
 
-#include "containers/containers.h"
+#include "containers.h"
 
 /** Bit stream structure
  * Value are read from the buffer, taking bits from MSB to LSB in sequential

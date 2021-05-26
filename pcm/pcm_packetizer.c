@@ -32,13 +32,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <string.h>
 
-#include "containers/packetizers.h"
-#include "containers/core/packetizers_private.h"
-#include "containers/core/containers_common.h"
-#include "containers/core/containers_logging.h"
-#include "containers/core/containers_time.h"
-#include "containers/core/containers_utils.h"
-#include "containers/core/containers_bytestream.h"
+#include "packetizers.h"
+#include "core/packetizers_private.h"
+#include "core/containers_common.h"
+#include "core/containers_logging.h"
+#include "core/containers_time.h"
+#include "core/containers_utils.h"
+#include "core/containers_bytestream.h"
 
 #define FRAME_SIZE (16*1024) /**< Arbitrary value which is neither too small nor too big */
 #define FACTOR_SHIFT 4 /**< Shift applied to the conversion factor */

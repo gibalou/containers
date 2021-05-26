@@ -30,7 +30,7 @@ endif ()
 endfunction()
 
 # Make sure the compiler can find the necessary include files
-include_directories (${SOURCE_DIR}/..)
+include_directories (${SOURCE_DIR})
 
 # Needed for the container loader
 set(PLUGIN_DIR plugins)

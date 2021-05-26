@@ -28,10 +28,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 
 #define BITS_LOG_INDENT(ctx) indent_level
-#include "containers/containers.h"
-#include "containers/core/containers_common.h"
-#include "containers/core/containers_logging.h"
-#include "containers/core/containers_bits.h"
+#include "containers.h"
+#include "core/containers_common.h"
+#include "core/containers_logging.h"
+#include "core/containers_bits.h"
 
 uint32_t indent_level;
 

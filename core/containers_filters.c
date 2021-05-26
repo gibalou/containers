@@ -30,9 +30,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 #include <stdio.h>
 
-#include "containers/containers.h"
-#include "containers/core/containers_private.h"
-#include "containers/core/containers_filters.h"
+#include "containers.h"
+#include "core/containers_private.h"
+#include "core/containers_filters.h"
 
 #if !defined(ENABLE_CONTAINERS_STANDALONE)
    #include "dlfcn.h"

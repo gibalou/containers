@@ -30,10 +30,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#define ENABLE_MKV_EXTRA_LOGGING
 #define CONTAINER_IS_BIG_ENDIAN
 #define CONTAINER_HELPER_LOG_INDENT(a) (a)->priv->module->element_level
-#include "containers/core/containers_private.h"
-#include "containers/core/containers_io_helpers.h"
-#include "containers/core/containers_utils.h"
-#include "containers/core/containers_logging.h"
+#include "core/containers_private.h"
+#include "core/containers_io_helpers.h"
+#include "core/containers_utils.h"
+#include "core/containers_logging.h"
 
 /******************************************************************************
 Defines.

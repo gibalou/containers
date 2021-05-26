@@ -74,13 +74,13 @@ o The maximum size of a single RTP packet is 2K.
 //#define ENABLE_CONTAINERS_LOG_FORMAT
 //#define ENABLE_CONTAINERS_LOG_FORMAT_VERBOSE
 #define CONTAINER_HELPER_LOG_INDENT(a) 0
-#include "containers/core/containers_private.h"
-#include "containers/core/containers_io_helpers.h"
-#include "containers/core/containers_utils.h"
-#include "containers/core/containers_uri.h"
-#include "containers/core/containers_logging.h"
-#include "containers/core/containers_bits.h"
-#include "containers/core/containers_list.h"
+#include "core/containers_private.h"
+#include "core/containers_io_helpers.h"
+#include "core/containers_utils.h"
+#include "core/containers_uri.h"
+#include "core/containers_logging.h"
+#include "core/containers_bits.h"
+#include "core/containers_list.h"
 
 #include "rtp_priv.h"
 #include "rtp_mpeg4.h"

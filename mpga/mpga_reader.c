@@ -31,10 +31,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#define ENABLE_CONTAINERS_LOG_FORMAT
 //#define ENABLE_CONTAINERS_LOG_FORMAT_VERBOSE
 #define CONTAINER_HELPER_LOG_INDENT(a) 0
-#include "containers/core/containers_private.h"
-#include "containers/core/containers_io_helpers.h"
-#include "containers/core/containers_utils.h"
-#include "containers/core/containers_logging.h"
+#include "core/containers_private.h"
+#include "core/containers_io_helpers.h"
+#include "core/containers_utils.h"
+#include "core/containers_logging.h"
 #include "mpga_common.h"
 
 /******************************************************************************

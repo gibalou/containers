@@ -31,8 +31,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Helper functions and macros which provide functionality which is often used by containers
  */
 
-#include "containers/core/containers_io.h"
-#include "containers/core/containers_utils.h"
+#include "core/containers_io.h"
+#include "core/containers_utils.h"
 
 /*****************************************************************************
  * Helper inline functions to read integers from an i/o stream

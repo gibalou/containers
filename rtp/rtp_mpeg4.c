@@ -28,11 +28,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <string.h>
 
-#include "containers/containers.h"
+#include "containers.h"
 
-#include "containers/core/containers_logging.h"
-#include "containers/core/containers_bits.h"
-#include "containers/core/containers_list.h"
+#include "core/containers_logging.h"
+#include "core/containers_bits.h"
+#include "core/containers_list.h"
 #include "rtp_priv.h"
 #include "rtp_mpeg4.h"
 

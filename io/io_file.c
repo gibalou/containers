@@ -30,10 +30,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <limits.h>
 
-#include "containers/containers.h"
-#include "containers/core/containers_common.h"
-#include "containers/core/containers_io.h"
-#include "containers/core/containers_uri.h"
+#include "containers.h"
+#include "core/containers_common.h"
+#include "core/containers_io.h"
+#include "core/containers_uri.h"
 
 typedef struct VC_CONTAINER_IO_MODULE_T
 {

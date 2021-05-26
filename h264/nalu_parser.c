@@ -37,13 +37,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define ENABLE_CONTAINERS_LOG_FORMAT_VERBOSE
 #endif
 
-#include "containers/containers.h"
+#include "containers.h"
 
-#include "containers/core/containers_common.h"
-#include "containers/core/containers_logging.h"
-#include "containers/core/containers_bits.h"
-#include "containers/core/containers_private.h"
-#include "containers/core/containers_io_helpers.h"
+#include "core/containers_common.h"
+#include "core/containers_logging.h"
+#include "core/containers_bits.h"
+#include "core/containers_private.h"
+#include "core/containers_io_helpers.h"
 
 #include "nalu_parser.h"
 

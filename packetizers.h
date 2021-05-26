@@ -35,7 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern "C" {
 #endif
 
-#include "containers/containers.h"
+#include "containers.h"
 
 /** \defgroup VcPacketizerApi Packetizer API
  *  API for packetizers */

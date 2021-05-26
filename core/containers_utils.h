@@ -27,9 +27,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef VC_CONTAINERS_UTILS_H
 #define VC_CONTAINERS_UTILS_H
 
-#include "containers/containers.h"
-#include "containers/containers_codecs.h"
-#include "containers/core/containers_waveformat.h"
+#include "containers.h"
+#include "containers_codecs.h"
+#include "core/containers_waveformat.h"
 
 /*****************************************************************************
  * Type definitions

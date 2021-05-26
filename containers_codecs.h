@@ -35,7 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern "C" {
 #endif
 
-#include "containers/containers_types.h"
+#include "containers_types.h"
 
 /* Video */
 #define VC_CONTAINER_CODEC_MP1V        VC_FOURCC('m','p','1','v')

@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * that don't include an index.
  */
 
-#include "containers/containers.h" 
+#include "containers.h"
 
 struct VC_CONTAINER_INDEX_T;
 typedef struct VC_CONTAINER_INDEX_T VC_CONTAINER_INDEX_T;

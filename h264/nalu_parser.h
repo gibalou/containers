@@ -29,8 +29,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _H264_NALU_PARSER_H_
 #define _H264_NALU_PARSER_H_
 
-#include "containers/containers.h"
-#include "containers/core/containers_bits.h"
+#include "containers.h"
+#include "core/containers_bits.h"
 
 /**************************************************************************//**
  * Parse an H.264 NAL unit.

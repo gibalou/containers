@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 #include <stdlib.h>
 
-#include "containers/core/containers_uri.h"
+#include "core/containers_uri.h"
 
 /*****************************************************************************/
 /* Internal types and definitions                                            */

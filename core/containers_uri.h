@@ -36,7 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern "C" {
 #endif
 
-#include "containers/containers.h"
+#include "containers.h"
 
 typedef struct VC_URI_PARTS_T VC_URI_PARTS_T;
 

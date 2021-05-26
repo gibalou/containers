@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _VC_CONTAINERS_LIST_H_
 #define _VC_CONTAINERS_LIST_H_
 
-#include "containers/containers.h"
+#include "containers.h"
 
 /** List entry comparison prototype.
  * Returns zero if items at a and b match, positive if a is "bigger" than b and

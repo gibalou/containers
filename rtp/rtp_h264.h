@@ -28,8 +28,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _RTP_H264_H_
 #define _RTP_H264_H_
 
-#include "containers/containers.h"
-#include "containers/core/containers_list.h"
+#include "containers.h"
+#include "core/containers_list.h"
 
 /** H.264 parameter handler
  *

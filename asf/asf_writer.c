@@ -28,11 +28,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 
 //#define ENABLE_CONTAINERS_LOG_FORMAT
-#include "containers/core/containers_private.h"
-#include "containers/core/containers_io_helpers.h"
-#include "containers/core/containers_utils.h"
-#include "containers/core/containers_writer_utils.h"
-#include "containers/core/containers_logging.h"
+#include "core/containers_private.h"
+#include "core/containers_io_helpers.h"
+#include "core/containers_utils.h"
+#include "core/containers_writer_utils.h"
+#include "core/containers_logging.h"
 #undef CONTAINER_HELPER_LOG_INDENT
 #define CONTAINER_HELPER_LOG_INDENT(a) (a)->priv->module->object_level
 

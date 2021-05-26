@@ -28,8 +28,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <string.h>
 
-#include "containers/core/containers_common.h"
-#include "containers/core/containers_list.h"
+#include "core/containers_common.h"
+#include "core/containers_list.h"
 
 /******************************************************************************
 Defines and constants.

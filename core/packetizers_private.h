@@ -32,10 +32,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <stdarg.h>
-#include "containers/packetizers.h"
-#include "containers/core/containers_common.h"
-#include "containers/core/containers_bytestream.h"
-#include "containers/core/containers_time.h"
+#include "packetizers.h"
+#include "core/containers_common.h"
+#include "core/containers_bytestream.h"
+#include "core/containers_time.h"
 
 /** \defgroup VcPacketizerModuleApi Packetizer Module API
  * Private interface for modules implementing packetizers */

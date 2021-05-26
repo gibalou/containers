@@ -28,11 +28,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <limits.h>
 #include <string.h>
 #include <stdio.h>
-#include "containers/containers.h"
-#include "containers/core/containers_common.h"
-#include "containers/core/containers_logging.h"
-#include "containers/core/containers_utils.h"
-#include "containers/core/containers_io.h"
+#include "containers.h"
+#include "core/containers_common.h"
+#include "core/containers_logging.h"
+#include "core/containers_utils.h"
+#include "core/containers_io.h"
 
 #define BUFFER_SIZE 256*1024
 #define MAX_TRACKS 16

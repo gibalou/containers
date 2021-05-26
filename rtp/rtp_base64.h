@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _RTP_BASE64_H_
 #define _RTP_BASE64_H_
 
-#include "containers/containers.h"
+#include "containers.h"
 
 /** Returns the number of bytes encoded by the given Base64 encoded string.
  *

@@ -28,9 +28,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include "containers/containers.h"
-#include "containers/core/containers_private.h"
-#include "containers/core/containers_logging.h"
+#include "containers.h"
+#include "core/containers_private.h"
+#include "core/containers_logging.h"
 
 #ifdef __ANDROID__
 #define LOG_TAG "ContainersCore"

@@ -28,12 +28,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <string.h>
 
-#include "containers/packetizers.h"
-#include "containers/core/packetizers_private.h"
-#include "containers/core/containers_common.h"
-#include "containers/core/containers_logging.h"
-#include "containers/core/containers_utils.h"
-#include "containers/core/containers_io.h"
+#include "packetizers.h"
+#include "core/packetizers_private.h"
+#include "core/containers_common.h"
+#include "core/containers_logging.h"
+#include "core/containers_utils.h"
+#include "core/containers_io.h"
 
 /** List of registered packetizers. */
 static VC_PACKETIZER_REGISTRY_ENTRY_T *registry;

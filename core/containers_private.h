@@ -32,12 +32,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <stdarg.h>
-#include "containers/containers.h"
-#include "containers/core/containers_common.h"
-#include "containers/core/containers_io.h"
-#include "containers/core/containers_filters.h"
-#include "containers/packetizers.h"
-#include "containers/core/containers_uri.h"
+#include "containers.h"
+#include "core/containers_common.h"
+#include "core/containers_io.h"
+#include "core/containers_filters.h"
+#include "packetizers.h"
+#include "core/containers_uri.h"
 
 #define URI_MAX_LEN 256
 

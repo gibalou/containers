@@ -31,11 +31,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //#define ENABLE_CONTAINERS_LOG_FORMAT_VERBOSE
 
-#include "containers/core/containers_private.h"
-#include "containers/core/containers_io_helpers.h"
-#include "containers/core/containers_utils.h"
-#include "containers/core/containers_logging.h"
-#include "containers/core/containers_bits.h"
+#include "core/containers_private.h"
+#include "core/containers_io_helpers.h"
+#include "core/containers_utils.h"
+#include "core/containers_logging.h"
+#include "core/containers_bits.h"
 
 static FILE *myfile;
 

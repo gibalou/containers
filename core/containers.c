@@ -28,12 +28,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <string.h>
 
-#include "containers/core/containers_private.h"
-#include "containers/core/containers_io.h"
-#include "containers/core/containers_filters.h"
-#include "containers/core/containers_loader.h"
-#include "containers/core/containers_logging.h"
-#include "containers/core/containers_utils.h"
+#include "core/containers_private.h"
+#include "core/containers_io.h"
+#include "core/containers_filters.h"
+#include "core/containers_loader.h"
+#include "core/containers_logging.h"
+#include "core/containers_utils.h"
 
 #define WRITER_SPACE_SAFETY_MARGIN (10*1024)
 #define PACKETIZER_BUFFER_SIZE (32*1024)

@@ -35,7 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern "C" {
 #endif
 
-#include "containers/containers_types.h"
+#include "containers_types.h"
 
 /** \defgroup VcContainerApi Container API
  *  API for container readers and writers */

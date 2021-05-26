@@ -29,11 +29,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 #include <stdio.h>
 
-#include "containers/containers.h"
-#include "containers/core/containers_io.h"
-#include "containers/core/containers_common.h"
-#include "containers/core/containers_utils.h"
-#include "containers/core/containers_uri.h"
+#include "containers.h"
+#include "core/containers_io.h"
+#include "core/containers_common.h"
+#include "core/containers_utils.h"
+#include "core/containers_uri.h"
 
 #define MAX_NUM_CACHED_AREAS 16
 #define MAX_NUM_MEMORY_AREAS 4

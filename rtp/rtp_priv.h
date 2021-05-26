@@ -28,11 +28,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _RTP_PRIV_H_
 #define _RTP_PRIV_H_
 
-#include "containers/containers.h"
+#include "containers.h"
 
-#include "containers/core/containers_private.h"
-#include "containers/core/containers_bits.h"
-#include "containers/core/containers_list.h"
+#include "core/containers_private.h"
+#include "core/containers_bits.h"
+#include "core/containers_list.h"
 
 typedef VC_CONTAINER_STATUS_T (*PAYLOAD_HANDLER_T)(VC_CONTAINER_T *p_ctx,
       VC_CONTAINER_TRACK_T *track, VC_CONTAINER_PACKET_T *p_packet, uint32_t flags);

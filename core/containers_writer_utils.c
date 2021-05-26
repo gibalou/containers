@@ -28,10 +28,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <string.h>
 
-#include "containers/containers.h"
-#include "containers/core/containers_private.h"
-#include "containers/core/containers_utils.h"
-#include "containers/core/containers_writer_utils.h"
+#include "containers.h"
+#include "core/containers_private.h"
+#include "core/containers_utils.h"
+#include "core/containers_writer_utils.h"
 
 #include <stdio.h>
 

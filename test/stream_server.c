@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <ctype.h>
 
-#include "containers/net/net_sockets.h"
+#include "net/net_sockets.h"
 
 #define MAX_BUFFER_LEN  1024
 #define MAX_NAME_LEN    256

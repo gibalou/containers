@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** \file containers_io.h
  * Interface definition for the input / output abstraction layer used by container
  * readers and writers */
-#include "containers/containers.h"
+#include "containers.h"
 
 #ifdef __cplusplus
 extern "C" {

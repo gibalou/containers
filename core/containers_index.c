@@ -28,8 +28,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <string.h>
 
-#include "containers/containers.h"
-#include "containers/core/containers_index.h"
+#include "containers.h"
+#include "core/containers_index.h"
 
 typedef struct {
    int64_t file_offset;

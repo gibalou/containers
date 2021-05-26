@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * common layer */
 #include <stdarg.h>
 
-#include "containers/containers.h"
+#include "containers.h"
 
 /** \defgroup VcContainerFilterApi Container Filter API */
 /* @{ */

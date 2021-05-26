@@ -36,11 +36,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define VC_CONTAINER_TRACK_MODULE_T VC_CONTAINER_TRACK_MODULE_MP4_READER_T
 
 #define CONTAINER_IS_BIG_ENDIAN
-#include "containers/core/containers_private.h"
-#include "containers/core/containers_io_helpers.h"
-#include "containers/core/containers_utils.h"
-#include "containers/core/containers_logging.h"
-#include "containers/mp4/mp4_common.h"
+#include "core/containers_private.h"
+#include "core/containers_io_helpers.h"
+#include "core/containers_utils.h"
+#include "core/containers_logging.h"
+#include "mp4/mp4_common.h"
 #undef CONTAINER_HELPER_LOG_INDENT
 #define CONTAINER_HELPER_LOG_INDENT(a) (a)->priv->module->box_level
 

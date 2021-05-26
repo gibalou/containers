@@ -28,9 +28,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "containers/containers.h"
-#include "containers/core/containers_common.h"
-#include "containers/core/containers_logging.h"
+#include "containers.h"
+#include "core/containers_common.h"
+#include "core/containers_logging.h"
 #include "net_sockets.h"
 #include "net_sockets_priv.h"
 

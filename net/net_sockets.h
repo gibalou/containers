@@ -35,7 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Does not support IPv6 multicast.
  */
 
-#include "containers/containers_types.h"
+#include "containers_types.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -28,11 +28,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <string.h>
 
-#include "containers/containers.h"
-#include "containers/core/containers_common.h"
-#include "containers/core/containers_io.h"
-#include "containers/core/containers_uri.h"
-#include "containers/net/net_sockets.h"
+#include "containers.h"
+#include "core/containers_common.h"
+#include "core/containers_io.h"
+#include "core/containers_uri.h"
+#include "net/net_sockets.h"
 
 /* Uncomment this macro definition to capture data read and written through this interface */
 /* #define IO_NET_CAPTURE_PACKETS */

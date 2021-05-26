@@ -25,11 +25,11 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "containers/core/containers_bits.h"
-#include "containers/core/containers_common.h"
+#include "core/containers_bits.h"
+#include "core/containers_common.h"
 
 #ifdef    ENABLE_CONTAINERS_LOG_FORMAT
-#include "containers/core/containers_logging.h"
+#include "core/containers_logging.h"
 #endif
 
 /******************************************************************************

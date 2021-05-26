@@ -27,9 +27,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdio.h>
 
-#include "containers/containers.h"
-#include "containers/core/containers_logging.h"
-#include "containers/core/containers_io.h"
+#include "containers.h"
+#include "core/containers_logging.h"
+#include "core/containers_io.h"
 
 #include "nb_io.h"
 

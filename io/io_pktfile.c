@@ -44,10 +44,10 @@ many bytes of data.
 #include <stdio.h>
 #include <limits.h>
 
-#include "containers/containers.h"
-#include "containers/core/containers_common.h"
-#include "containers/core/containers_io.h"
-#include "containers/core/containers_uri.h"
+#include "containers.h"
+#include "core/containers_common.h"
+#include "core/containers_io.h"
+#include "core/containers_uri.h"
 
 /** Native byte order word */
 #define NATIVE_BYTE_ORDER  0x50415753

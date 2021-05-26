@@ -42,10 +42,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define  VC_CONTAINER_MODULE_T ASF_VC_CONTAINER_MODULE_T
 #define  VC_CONTAINER_T ASF_VC_CONTAINER_T
 
-#include "containers/core/containers_private.h"
-#include "containers/core/containers_io_helpers.h"
-#include "containers/core/containers_utils.h"
-#include "containers/core/containers_logging.h"
+#include "core/containers_private.h"
+#include "core/containers_io_helpers.h"
+#include "core/containers_utils.h"
+#include "core/containers_logging.h"
 
 /******************************************************************************
 Defines.

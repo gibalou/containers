@@ -31,9 +31,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Helper functions and macros for container writers
  */
 
-#include "containers/containers.h" 
-#include "containers/containers_codecs.h"
-#include "containers/core/containers_io_helpers.h"
+#include "containers.h"
+#include "containers_codecs.h"
+#include "core/containers_io_helpers.h"
 
 /*****************************************************************************
  * Helper inline functions to write format specific structus to an i/o stream

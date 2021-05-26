@@ -28,8 +28,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _RTP_MPEG4_H_
 #define _RTP_MPEG4_H_
 
-#include "containers/containers.h"
-#include "containers/core/containers_list.h"
+#include "containers.h"
+#include "core/containers_list.h"
 
 /** MPEG-4 parameter handler
  *
