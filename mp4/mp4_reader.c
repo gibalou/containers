@@ -1,6 +1,7 @@
 /*
 Copyright (c) 2012, Broadcom Europe Ltd
-Copyright (c) 2017, Gildas Bazin
+Copyright (c) 2017-2021, Gildas Bazin
+Copyright (c) 2021, Amazon.com, Inc. or its affiliates.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -135,6 +136,8 @@ typedef struct VC_CONTAINER_TRACK_MODULE_T
 
    uint8_t is_protected;
    uint8_t per_sample_iv_size;
+
+   int64_t pts_offset;
 
 } VC_CONTAINER_TRACK_MODULE_T;
 
@@ -860,17 +863,32 @@ static VC_CONTAINER_STATUS_T mp4_read_box_edts( VC_CONTAINER_T *p_ctx, int64_t s
 /*****************************************************************************/
 static VC_CONTAINER_STATUS_T mp4_read_box_elst( VC_CONTAINER_T *p_ctx, int64_t size )
 {
-   uint32_t i, entries;
+   VC_CONTAINER_MODULE_T *module = p_ctx->priv->module;
+   VC_CONTAINER_TRACK_MODULE_T *track_module = p_ctx->tracks[module->current_track]->priv->module;
+   uint32_t i, version, entries;
+   int64_t duration, media_time;
 
-   MP4_SKIP_U8(p_ctx, "version");
+   version = MP4_READ_U8(p_ctx, "version");
    MP4_SKIP_U24(p_ctx, "flags");
 
    entries = MP4_READ_U32(p_ctx, "entries");
-   for (i = 0; i < entries; i++)
+   for(i = 0; i < entries; i++)
    {
-      MP4_SKIP_U32(p_ctx, "track_duration");
-      MP4_SKIP_U32(p_ctx, "media_time");
-      MP4_SKIP_U32(p_ctx, "media_rate");
+      if(version)
+      {
+         duration = MP4_READ_U64(p_ctx, "track_duration");
+         media_time = (int64_t)MP4_READ_U64(p_ctx, "media_time");
+      }
+      else
+      {
+         duration = MP4_READ_U32(p_ctx, "track_duration");
+         media_time = (int32_t)MP4_READ_U32(p_ctx, "media_time");
+      }
+      MP4_SKIP_U16(p_ctx, "media_rate_integer");
+      MP4_SKIP_U16(p_ctx, "media_rate_fraction");
+
+      if(!i && media_time < 0)
+         track_module->pts_offset = duration;
    }
 
    return STREAM_STATUS(p_ctx);
@@ -1808,7 +1826,7 @@ static VC_CONTAINER_STATUS_T mp4_read_sample_header( VC_CONTAINER_T *p_ctx, uint
 
    /* Get the timestamp */
    if(track_module->timescale)
-      state->pts = state->dts = state->duration * 1000000 / track_module->timescale;
+      state->pts = state->dts = (track_module->pts_offset + state->duration) * 1000000 / track_module->timescale;
    if(!state->sample_duration_count)
    {
       state->status = mp4_read_sample_table( p_ctx, track_module, state, MP4_SAMPLE_TABLE_STTS, 1 );
@@ -1825,7 +1843,7 @@ static VC_CONTAINER_STATUS_T mp4_read_sample_header( VC_CONTAINER_T *p_ctx, uint
          if(state->status != VC_CONTAINER_SUCCESS) goto error;
       }
       if(track_module->timescale)
-         state->pts = (state->duration + state->sample_composition_offset) * 1000000 / track_module->timescale;
+         state->pts = (track_module->pts_offset + state->duration + state->sample_composition_offset) * 1000000 / track_module->timescale;
       state->sample_composition_count--;
    }
    state->duration += state->sample_duration;
@@ -1991,9 +2009,11 @@ static uint32_t mp4_find_sample( VC_CONTAINER_T *p_ctx, uint32_t track,
    VC_CONTAINER_PARAM_UNUSED(state);
 
    seek_time = seek_time * track_module->timescale / 1000000;
+   seek_time -= track_module->pts_offset;
    /* We also need to check against the time rounded up to account for
     * rounding errors in the timestamp (because of the timescale conversion) */
    seek_time_up = seek_time_up * track_module->timescale / 1000000;
+   seek_time_up -= track_module->pts_offset;
 
    status = SEEK(p_ctx, track_module->sample_table[MP4_SAMPLE_TABLE_STTS].offset);
    if(status != VC_CONTAINER_SUCCESS) goto end;

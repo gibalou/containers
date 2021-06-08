@@ -1,6 +1,7 @@
 /*
 Copyright (c) 2012, Broadcom Europe Ltd
-Copyright (c) 2017, Gildas Bazin
+Copyright (c) 2017-2021, Gildas Bazin
+Copyright (c) 2021, Amazon.com, Inc. or its affiliates.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -71,6 +72,8 @@ typedef struct VC_CONTAINER_TRACK_MODULE_T
    int64_t first_pts;
    int64_t last_pts;
 
+   int64_t duration;
+
 } VC_CONTAINER_TRACK_MODULE_T;
 
 typedef struct VC_CONTAINER_MODULE_T
@@ -95,8 +98,7 @@ typedef struct VC_CONTAINER_MODULE_T
    int64_t prev_sample_dts;
    int64_t initial_sample_dts;
 
-   int64_t duration;
-   /**/
+   int64_t earliest_pts;
 
 } VC_CONTAINER_MODULE_T;
 
@@ -110,6 +112,8 @@ static VC_CONTAINER_STATUS_T mp4_write_box_moov( VC_CONTAINER_T *p_ctx );
 static VC_CONTAINER_STATUS_T mp4_write_box_mvhd( VC_CONTAINER_T *p_ctx );
 static VC_CONTAINER_STATUS_T mp4_write_box_trak( VC_CONTAINER_T *p_ctx );
 static VC_CONTAINER_STATUS_T mp4_write_box_tkhd( VC_CONTAINER_T *p_ctx );
+static VC_CONTAINER_STATUS_T mp4_write_box_edts( VC_CONTAINER_T *p_ctx );
+static VC_CONTAINER_STATUS_T mp4_write_box_elst( VC_CONTAINER_T *p_ctx );
 static VC_CONTAINER_STATUS_T mp4_write_box_mdia( VC_CONTAINER_T *p_ctx );
 static VC_CONTAINER_STATUS_T mp4_write_box_mdhd( VC_CONTAINER_T *p_ctx );
 static VC_CONTAINER_STATUS_T mp4_write_box_hdlr( VC_CONTAINER_T *p_ctx );
@@ -143,6 +147,8 @@ static struct {
    {MP4_BOX_TYPE_MVHD, mp4_write_box_mvhd},
    {MP4_BOX_TYPE_TRAK, mp4_write_box_trak},
    {MP4_BOX_TYPE_TKHD, mp4_write_box_tkhd},
+   {MP4_BOX_TYPE_EDTS, mp4_write_box_edts},
+   {MP4_BOX_TYPE_ELST, mp4_write_box_elst},
    {MP4_BOX_TYPE_MDIA, mp4_write_box_mdia},
    {MP4_BOX_TYPE_MDHD, mp4_write_box_mdhd},
    {MP4_BOX_TYPE_HDLR, mp4_write_box_hdlr},
@@ -303,19 +309,21 @@ static VC_CONTAINER_STATUS_T mp4_write_box_trex( VC_CONTAINER_T *p_ctx )
 static VC_CONTAINER_STATUS_T mp4_write_box_mvhd( VC_CONTAINER_T *p_ctx )
 {
    static uint32_t matrix[] = { 0x10000,0,0,0,0x10000,0,0,0,0x40000000 };
+   VC_CONTAINER_MODULE_T *module = p_ctx->priv->module;
    unsigned int version = MP4_64BITS_TIME;
    unsigned int i;
 
    WRITE_U8(p_ctx,  version, "version");
    WRITE_U24(p_ctx, 0, "flags");
 
-   /**/
+   /* Calculate the overall duration of the clip */
    p_ctx->duration = 0;
    for(i = 0; i < p_ctx->tracks_num; i++)
    {
       VC_CONTAINER_TRACK_T *track = p_ctx->tracks[i];
       VC_CONTAINER_TRACK_MODULE_T *track_module = track->priv->module;
-      int64_t track_duration = track_module->last_pts - track_module->first_pts;
+      int64_t track_duration = track_module->samples ?
+         track_module->last_pts - module->earliest_pts : 0;
       /* TODO: + last sample duration */
       if(track_duration > p_ctx->duration)
          p_ctx->duration = track_duration;
@@ -356,6 +364,9 @@ static VC_CONTAINER_STATUS_T mp4_write_box_trak( VC_CONTAINER_T *p_ctx )
    VC_CONTAINER_STATUS_T status;
 
    status = mp4_write_box(p_ctx, MP4_BOX_TYPE_TKHD);
+   if(status != VC_CONTAINER_SUCCESS) return status;
+
+   status = mp4_write_box(p_ctx, MP4_BOX_TYPE_EDTS);
    if(status != VC_CONTAINER_SUCCESS) return status;
 
    status = mp4_write_box(p_ctx, MP4_BOX_TYPE_MDIA);
@@ -417,6 +428,65 @@ static VC_CONTAINER_STATUS_T mp4_write_box_tkhd( VC_CONTAINER_T *p_ctx )
 
    WRITE_U32(p_ctx, width, "width");
    WRITE_U32(p_ctx, height, "height");
+
+   return STREAM_STATUS(p_ctx);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_write_box_edts( VC_CONTAINER_T *p_ctx )
+{
+   return mp4_write_box(p_ctx, MP4_BOX_TYPE_ELST);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_write_box_elst( VC_CONTAINER_T *p_ctx )
+{
+   VC_CONTAINER_MODULE_T *module = p_ctx->priv->module;
+   VC_CONTAINER_TRACK_T *track = p_ctx->tracks[module->current_track];
+   int64_t duration = track->priv->module->samples ?
+      track->priv->module->last_pts - track->priv->module->first_pts : 0;
+   int64_t offset = track->priv->module->samples ?
+      track->priv->module->first_pts - module->earliest_pts : 0;
+   unsigned int version = MP4_64BITS_TIME;
+
+   duration = duration * MP4_TIMESCALE / 1000000;
+   offset = offset * MP4_TIMESCALE / 1000000;
+
+   WRITE_U8(p_ctx,  version, "version");
+   WRITE_U24(p_ctx, 0, "flags");
+
+   WRITE_U32(p_ctx, offset ? 2 : 1, "entries");
+
+   /* Initial empty edit to offset the playback of the track */
+   if(offset)
+   {
+      if(version)
+      {
+         WRITE_U64(p_ctx, offset, "track_duration");
+         WRITE_U64(p_ctx, -1, "media_time");
+      }
+      else
+      {
+         WRITE_U32(p_ctx, offset, "track_duration");
+         WRITE_U32(p_ctx, -1, "media_time");
+      }
+      WRITE_U16(p_ctx, 1, "media_rate_integer");
+      WRITE_U16(p_ctx, 0, "media_rate_fraction");
+   }
+
+   /* Edit for the actual track data */
+   if(version)
+   {
+      WRITE_U64(p_ctx, duration, "track_duration");
+      WRITE_U64(p_ctx, 0, "media_time");
+   }
+   else
+   {
+      WRITE_U32(p_ctx, duration, "track_duration");
+      WRITE_U32(p_ctx, 0, "media_time");
+   }
+   WRITE_U16(p_ctx, 1, "media_rate_integer");
+   WRITE_U16(p_ctx, 0, "media_rate_fraction");
 
    return STREAM_STATUS(p_ctx);
 }
@@ -1406,7 +1476,13 @@ static VC_CONTAINER_STATUS_T mp4_writer_add_sample( VC_CONTAINER_T *p_ctx,
    VC_CONTAINER_TRACK_MODULE_T *track_module = track->priv->module;
 
    track_module->last_pts = packet->pts;
-   if(!track_module->samples) track_module->first_pts = packet->pts;
+   if(!track_module->samples)
+   {
+      track_module->first_pts = packet->pts;
+      if(module->earliest_pts == VC_CONTAINER_TIME_UNKNOWN ||
+         packet->pts < module->earliest_pts)
+         module->earliest_pts = packet->pts;
+   }
 
    track_module->samples++;
    track_module->sample_table[MP4_SAMPLE_TABLE_STSZ].entries++; /* sample size */
@@ -1544,6 +1620,7 @@ VC_CONTAINER_STATUS_T mp4_writer_open( VC_CONTAINER_T *p_ctx )
    p_ctx->priv->pf_control = mp4_writer_control;
 
    module->initial_sample_dts = VC_CONTAINER_TIME_UNKNOWN;
+   module->earliest_pts = VC_CONTAINER_TIME_UNKNOWN;
    return VC_CONTAINER_SUCCESS;
 
  error:
