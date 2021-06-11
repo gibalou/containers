@@ -460,7 +460,6 @@ static int container_test_parse_cmdline(int argc, char **argv)
 
 static int container_test_info(VC_CONTAINER_T *ctx, bool b_reader)
 {
-   const char *name_type;
    unsigned int i;
 
    LOG_INFO(0, "");
@@ -473,48 +472,8 @@ static int container_test_info(VC_CONTAINER_T *ctx, bool b_reader)
 
    for(i = 0; i < ctx->tracks_num; i++)
    {
-      VC_CONTAINER_TRACK_T *track = ctx->tracks[i];
-
-      switch(track->format->es_type)
-      {
-      case VC_CONTAINER_ES_TYPE_AUDIO: name_type = "audio"; break;
-      case VC_CONTAINER_ES_TYPE_VIDEO: name_type = "video"; break;
-      case VC_CONTAINER_ES_TYPE_SUBPICTURE: name_type = "subpicture"; break;
-      default: name_type = "unknown"; break;
-      }
-
-      LOG_INFO(0, "track: %i, type: %s, fourcc: %4.4s", i, name_type, (char *)&track->format->codec);
-      LOG_INFO(0, " bitrate: %i, framed: %i, enabled: %i", track->format->bitrate,
-               !!(track->format->flags & VC_CONTAINER_ES_FORMAT_FLAG_FRAMED), track->is_enabled);
-      LOG_INFO(0, " extra data: %i, %p", track->format->extradata_size, track->format->extradata);
-      switch(track->format->es_type)
-      {
-      case VC_CONTAINER_ES_TYPE_AUDIO:
-         LOG_INFO(0, " samplerate: %i, channels: %i, bps: %i, block align: %i",
-                  track->format->type->audio.sample_rate, track->format->type->audio.channels,
-                  track->format->type->audio.bits_per_sample, track->format->type->audio.block_align);
-         LOG_INFO(0, " gapless delay: %i gapless padding: %i",
-                  track->format->type->audio.gap_delay, track->format->type->audio.gap_padding);
-         LOG_INFO(0, " language: %4.4s", track->format->language);
-         break;
-
-      case VC_CONTAINER_ES_TYPE_VIDEO:
-         LOG_INFO(0, " width: %i, height: %i, (%i,%i,%i,%i)",
-                  track->format->type->video.width, track->format->type->video.height,
-                  track->format->type->video.x_offset, track->format->type->video.y_offset,
-                  track->format->type->video.visible_width, track->format->type->video.visible_height);
-         LOG_INFO(0, " pixel aspect ratio: %i/%i, frame rate: %i/%i",
-                  track->format->type->video.par_num, track->format->type->video.par_den,
-                  track->format->type->video.frame_rate_num, track->format->type->video.frame_rate_den);
-         break;
-
-      case VC_CONTAINER_ES_TYPE_SUBPICTURE:
-         LOG_INFO(0, " language: %4.4s, encoding: %i", track->format->language,
-                  track->format->type->subpicture.encoding);
-         break;
-
-      default: break;
-      }
+      LOG_DEBUG(0, "track: %i, enabled: %i", i, ctx->tracks[i]->is_enabled);
+      vc_container_print_es_format(VC_CONTAINER_LOG_DEBUG, ctx->tracks[i]->format);
    }
 
    for (i = 0; i < ctx->meta_num; ++i)

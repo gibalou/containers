@@ -1,5 +1,6 @@
 /*
 Copyright (c) 2012, Broadcom Europe Ltd
+Copyright (c) 2021, Amazon.com, Inc. or its affiliates.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -31,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "containers.h"
 #include "core/containers_common.h"
 #include "core/containers_utils.h"
+#include "core/containers_logging.h"
 
 /******************************************************************************
 Defines.
@@ -139,6 +141,33 @@ VC_CONTAINER_STATUS_T vc_container_format_copy( VC_CONTAINER_ES_FORMAT_T *p_out,
       memcpy(p_out->extradata, p_in->extradata, p_in->extradata_size);
 
    return VC_CONTAINER_SUCCESS;
+}
+
+/*****************************************************************************/
+int vc_container_format_cmp(VC_CONTAINER_ES_FORMAT_T *p_fmt1,
+                            VC_CONTAINER_ES_FORMAT_T *p_fmt2,
+                            bool b_ignore_extradata)
+{
+   VC_CONTAINER_ES_FORMAT_T fmt1 = *p_fmt1, fmt2 = *p_fmt2;
+   VC_CONTAINER_ES_SPECIFIC_FORMAT_T type1 = *p_fmt1->type, type2 = *p_fmt2->type;
+
+   fmt1.type = fmt2.type = 0;
+   fmt1.extradata = fmt2.extradata = 0;
+
+   if (b_ignore_extradata)
+      fmt1.extradata_size = fmt2.extradata_size = 0;
+
+   if (memcmp(&fmt1, &fmt2, sizeof(fmt1)))
+      return -1;
+
+   if (memcmp(&type1, &type2, sizeof(type1)))
+      return -1;
+
+   if (!b_ignore_extradata &&
+       memcmp(p_fmt1->extradata, p_fmt2->extradata, p_fmt1->extradata_size))
+      return -1;
+
+   return 0;
 }
 
 /*****************************************************************************/
@@ -362,5 +391,52 @@ void vc_container_maths_rational_simplify(uint32_t *num, uint32_t *den)
    {
       *num /= div;
       *den /= div;
+   }
+}
+
+/*****************************************************************************/
+void vc_container_print_es_format(unsigned level, VC_CONTAINER_ES_FORMAT_T *format)
+{
+   const char *name_type;
+
+   switch(format->es_type)
+   {
+   case VC_CONTAINER_ES_TYPE_AUDIO: name_type = "audio"; break;
+   case VC_CONTAINER_ES_TYPE_VIDEO: name_type = "video"; break;
+   case VC_CONTAINER_ES_TYPE_SUBPICTURE: name_type = "subpicture"; break;
+   default: name_type = "unknown"; break;
+   }
+
+   vc_container_log(0, level, "type: %s, fourcc: %4.4s, bps: %i, framed: %i", name_type,
+       (char *)&format->codec, format->bitrate,
+       !!(format->flags & VC_CONTAINER_ES_FORMAT_FLAG_FRAMED));
+   vc_container_log(0, level, " extra data: %i, %p", format->extradata_size, format->extradata);
+   switch(format->es_type)
+   {
+   case VC_CONTAINER_ES_TYPE_AUDIO:
+      vc_container_log(0, level, " samplerate: %i, channels: %i, bps: %i, block align: %i",
+         format->type->audio.sample_rate, format->type->audio.channels,
+         format->type->audio.bits_per_sample, format->type->audio.block_align);
+      vc_container_log(0, level, " gapless delay: %i gapless padding: %i",
+         format->type->audio.gap_delay, format->type->audio.gap_padding);
+      vc_container_log(0, level, " language: %4.4s", format->language);
+      break;
+
+   case VC_CONTAINER_ES_TYPE_VIDEO:
+      vc_container_log(0, level, " width: %i, height: %i, (%i,%i,%i,%i)",
+         format->type->video.width, format->type->video.height,
+         format->type->video.x_offset, format->type->video.y_offset,
+         format->type->video.visible_width, format->type->video.visible_height);
+      vc_container_log(0, level, " pixel aspect ratio: %i/%i, frame rate: %i/%i",
+         format->type->video.par_num, format->type->video.par_den,
+         format->type->video.frame_rate_num, format->type->video.frame_rate_den);
+      break;
+
+   case VC_CONTAINER_ES_TYPE_SUBPICTURE:
+      vc_container_log(0, level, " language: %4.4s, encoding: %i", format->language,
+         format->type->subpicture.encoding);
+      break;
+
+   default: break;
    }
 }

@@ -3,6 +3,11 @@ add_executable(containers_test test.c)
 target_link_libraries(containers_test -Wl,--no-whole-archive containers)
 install(TARGETS containers_test DESTINATION bin)
 
+# Generate regression test application
+add_executable(containers_regression test_regression.c)
+target_link_libraries(containers_regression -Wl,--no-whole-archive containers)
+install(TARGETS containers_regression DESTINATION bin)
+
 # Generate test application
 add_executable(containers_check_frame_int check_frame_int.c)
 target_link_libraries(containers_check_frame_int -Wl,--no-whole-archive containers)
