@@ -162,5 +162,7 @@ install(FILES ${core_HEADERS} DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}/conta
 
 option(DISABLE_TESTS "Disable tests" OFF)
 if (NOT DISABLE_TESTS)
+enable_testing()
+include (CTest)
 add_subdirectory(test)
 endif (NOT DISABLE_TESTS)
