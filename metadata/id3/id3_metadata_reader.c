@@ -35,6 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "core/containers_private.h"
 #include "core/containers_io_helpers.h"
 #include "core/containers_utils.h"
+#include "core/containers_metadata.h"
 #include "core/containers_logging.h"
 
 #include "id3_metadata_strings.h"
@@ -57,55 +58,12 @@ VC_CONTAINER_STATUS_T id3_metadata_reader_open( VC_CONTAINER_T * );
 /******************************************************************************
 Local Functions
 ******************************************************************************/
-static VC_CONTAINER_METADATA_T *id3_metadata_append( VC_CONTAINER_T *p_ctx,
-                                                     VC_CONTAINER_METADATA_KEY_T key,
-                                                     unsigned int size )
-{
-   VC_CONTAINER_METADATA_T *meta, **p_meta;
-   unsigned int i;
-   
-   for (i = 0; i != p_ctx->meta_num; ++i)
-   {
-      if (key == p_ctx->meta[i]->key) break;
-   }
-   
-   /* Avoid duplicate entries for now */
-   if (i < p_ctx->meta_num) return NULL;
-     
-   /* Sanity check size, truncate if necessary */
-   size = MIN(size, 512);
-
-   /* Allocate a new metadata entry */
-   if((meta = malloc(sizeof(VC_CONTAINER_METADATA_T) + size)) == NULL)
-      return NULL;
-
-   /* We need to grow the array holding the metadata entries somehow, ideally,
-      we'd like to use a linked structure of some sort but realloc is probably 
-      okay in this case */
-   if((p_meta = realloc(p_ctx->meta, sizeof(VC_CONTAINER_METADATA_T *) * (p_ctx->meta_num + 1))) == NULL)
-   {
-      free(meta);
-      return NULL;
-   }
-
-   p_ctx->meta = p_meta;
-   memset(meta, 0, sizeof(VC_CONTAINER_METADATA_T) + size);
-   p_ctx->meta[p_ctx->meta_num] = meta;
-   meta->key = key;
-   meta->value = (char *)&meta[1];
-   meta->size = size;
-   p_ctx->meta_num++;
-      
-   return meta;
-}
-
-/*****************************************************************************/
 static VC_CONTAINER_METADATA_T *id3_read_metadata_entry( VC_CONTAINER_T *p_ctx, 
    VC_CONTAINER_METADATA_KEY_T key, unsigned int len )
 {
    VC_CONTAINER_METADATA_T *meta;
       
-   if ((meta = id3_metadata_append(p_ctx, key, len + 1)) != NULL)
+   if ((meta = vc_container_metadata_append(p_ctx, key, len + 1, NULL)) != NULL)
    {
       unsigned int size = meta->size - 1;
       READ_BYTES(p_ctx, meta->value, size);
@@ -130,7 +88,10 @@ static VC_CONTAINER_METADATA_T *id3_read_metadata_entry_ex( VC_CONTAINER_T *p_ct
 {
    VC_CONTAINER_METADATA_T *meta;
       
-   if ((meta = id3_metadata_append(p_ctx, key, encoding ? len + 2 : len + 1)) != NULL)
+   /* Sanity check size, truncate if necessary */
+   len = MIN(len, 512);
+
+   if ((meta = vc_container_metadata_append(p_ctx, key, encoding ? len + 2 : len + 1, NULL)) != NULL)
    {
       unsigned int size;
       
@@ -162,7 +123,7 @@ static VC_CONTAINER_METADATA_T *id3_add_metadata_entry( VC_CONTAINER_T *p_ctx,
    VC_CONTAINER_METADATA_T *meta;
    unsigned int len = strlen(value);
 
-   if ((meta = id3_metadata_append(p_ctx, key, len + 1)) != NULL)
+   if ((meta = vc_container_metadata_append(p_ctx, key, len + 1, NULL)) != NULL)
    {
       unsigned int size = meta->size - 1;
       
@@ -358,7 +319,7 @@ static VC_CONTAINER_STATUS_T id3_read_id3v1_tag( VC_CONTAINER_T *p_ctx )
    if (READ_U8(p_ctx, "ID3v1 zero-byte") == 0)
    {
       track = READ_U8(p_ctx, "ID3v1 track");
-      snprintf(track_num, sizeof(track_num) - 1, "%02d", track);
+      snprintf(track_num, sizeof(track_num), "%02d", track);
       id3_add_metadata_entry(p_ctx, VC_CONTAINER_METADATA_KEY_TRACK, track_num);
    }
    else

@@ -69,7 +69,8 @@ typedef enum
    VC_CONTAINER_ERROR_DRM_EXPIRED,                  /**< The DRM has expired */
    VC_CONTAINER_ERROR_DRM_FAILED,                   /**< Generic DRM error */
    VC_CONTAINER_ERROR_FAILED,                       /**< Generic error */
-   VC_CONTAINER_ERROR_NOT_READY                     /**< The container was not yet able to carry out the operation. */
+   VC_CONTAINER_ERROR_NOT_READY,                    /**< The container was not yet able to carry out the operation. */
+   VC_CONTAINER_ERROR_ALREADY_EXISTS                /**< The entry already exists */
 } VC_CONTAINER_STATUS_T;
 
 /** Four Character Code type used to identify codecs, etc. */
@@ -121,6 +122,9 @@ typedef enum {
    VC_CONTAINER_METADATA_KEY_GENRE       = VC_FOURCC('g','e','n','r'),
    VC_CONTAINER_METADATA_KEY_TRACK       = VC_FOURCC('t','r','a','k'),
    VC_CONTAINER_METADATA_KEY_LYRICS      = VC_FOURCC('l','y','r','x'),
+   VC_CONTAINER_METADATA_KEY_COMMENTS    = VC_FOURCC('c','m','t','s'),
+   VC_CONTAINER_METADATA_KEY_ENCODEDBY   = VC_FOURCC('e','n','c','b'),
+   VC_CONTAINER_METADATA_KEY_COPYRIGHT   = VC_FOURCC('c','p','y','r'),
 
    VC_CONTAINER_METADATA_KEY_UNKNOWN     = 0
 
@@ -660,7 +664,10 @@ typedef enum
     *   return=  one of the VC_CONTAINER_ERROR_DRM error codes if content can't be played */
    VC_CONTAINER_CONTROL_DRM_PLAY,
 
-   /** TBD */
+   /** Add metadata item to container\n
+    * Arguments:\n
+    *   arg1= VC_CONTAINER_METADATA_KEY_T: key of metadata item\n
+    *   arg2= const char *: metadata UTF-8 string to add\n */
    VC_CONTAINER_CONTROL_METADATA_ADD,
    /** TBD */
    VC_CONTAINER_CONTROL_METADATA_CHANGE,

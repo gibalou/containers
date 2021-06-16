@@ -69,7 +69,6 @@ typedef enum {
    MP4_BOX_TYPE_WIDE              = VC_FOURCC('w','i','d','e'),
    MP4_BOX_TYPE_PNOT              = VC_FOURCC('p','m','o','t'),
    MP4_BOX_TYPE_PICT              = VC_FOURCC('P','I','C','T'),
-   MP4_BOX_TYPE_UDTA              = VC_FOURCC('u','d','t','a'),
    MP4_BOX_TYPE_UUID              = VC_FOURCC('u','u','i','d'),
    MP4_BOX_TYPE_ESDS              = VC_FOURCC('e','s','d','s'),
    MP4_BOX_TYPE_AVCC              = VC_FOURCC('a','v','c','C'),
@@ -93,6 +92,26 @@ typedef enum {
    MP4_BOX_TYPE_SAIZ              = VC_FOURCC('s','a','i','z'),
    MP4_BOX_TYPE_SAIO              = VC_FOURCC('s','a','i','o'),
    MP4_BOX_TYPE_SENC              = VC_FOURCC('s','e','n','c'),
+
+   /* Metadata */
+   MP4_BOX_TYPE_UDTA              = VC_FOURCC('u','d','t','a'),
+   MP4_BOX_TYPE_META              = VC_FOURCC('m','e','t','a'),
+   MP4_BOX_TYPE_ILST              = VC_FOURCC('i','l','s','t'),
+   MP4_BOX_TYPE_DATA              = VC_FOURCC('d','a','t','a'),
+   MP4_BOX_TYPE_0xa9CMT           = VC_FOURCC(0xa9,'c','m','t'),
+   MP4_BOX_TYPE_0xa9TOO           = VC_FOURCC(0xa9,'t','o','o'),
+   MP4_BOX_TYPE_0xa9ENC           = VC_FOURCC(0xa9,'e','n','c'),
+   MP4_BOX_TYPE_0xa9DES           = VC_FOURCC(0xa9,'d','e','s'),
+   MP4_BOX_TYPE_DESC              = VC_FOURCC('d','e','s','c'),
+   MP4_BOX_TYPE_0xa9ALB           = VC_FOURCC(0xa9,'a','l','b'),
+   MP4_BOX_TYPE_0xa9ART           = VC_FOURCC(0xa9,'A','R','T'),
+   MP4_BOX_TYPE_0xa9AUT           = VC_FOURCC(0xa9,'a','u','t'),
+   MP4_BOX_TYPE_0xa9GEN           = VC_FOURCC(0xa9,'g','e','n'),
+   MP4_BOX_TYPE_0xa9NAM           = VC_FOURCC(0xa9,'n','a','m'),
+   MP4_BOX_TYPE_0xa9CPY           = VC_FOURCC(0xa9,'c','p','y'),
+   MP4_BOX_TYPE_0xa9DAY           = VC_FOURCC(0xa9,'d','a','y'),
+   MP4_BOX_TYPE_0xa9TRK           = VC_FOURCC(0xa9,'t','r','k'),
+
    MP4_BOX_TYPE_ZERO              = 0
 } MP4_BOX_TYPE_T;
 

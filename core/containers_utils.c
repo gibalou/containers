@@ -348,30 +348,6 @@ VC_CONTAINER_STATUS_T vc_container_bitmapinfoheader_to_es_format(uint8_t *p,
 }
 
 /*****************************************************************************/
-static struct {
-   VC_CONTAINER_METADATA_KEY_T key;
-   const char *name;
-} meta_key_conv[] =
-{  {VC_CONTAINER_METADATA_KEY_TITLE, "title"},
-   {VC_CONTAINER_METADATA_KEY_ARTIST, "artist"},
-   {VC_CONTAINER_METADATA_KEY_ALBUM, "album"},
-   {VC_CONTAINER_METADATA_KEY_DESCRIPTION, "description"},
-   {VC_CONTAINER_METADATA_KEY_YEAR, "year"},
-   {VC_CONTAINER_METADATA_KEY_GENRE, "genre"},
-   {VC_CONTAINER_METADATA_KEY_TRACK, "track"},
-   {VC_CONTAINER_METADATA_KEY_LYRICS, "lyrics"},
-   {VC_CONTAINER_METADATA_KEY_UNKNOWN, 0} };
-
-/*****************************************************************************/
-const char *vc_container_metadata_id_to_string(VC_CONTAINER_METADATA_KEY_T key)
-{
-   int i;
-   for(i = 0; meta_key_conv[i].key != VC_CONTAINER_METADATA_KEY_UNKNOWN; i++ )
-      if(meta_key_conv[i].key == key) break;
-   return meta_key_conv[i].name;
-}
-
-/*****************************************************************************/
 int64_t vc_container_maths_gcd(int64_t a, int64_t b)
 {
    while(b != 0)

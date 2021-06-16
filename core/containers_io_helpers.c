@@ -173,7 +173,7 @@ VC_CONTAINER_STATUS_T vc_container_helper_write_debug(VC_CONTAINER_T *ctx, int t
    {
       value = vc_container_io_write(ctx->priv->io, buffer, size);
       if(!silent)
-         vc_container_helper_format_debug(ctx, indent, "%s: \"%ls\"", name, buffer);
+         vc_container_helper_format_debug(ctx, indent, "%s: \"%s\"", name, buffer);
       return value == (uint64_t)size ? VC_CONTAINER_SUCCESS : VC_CONTAINER_ERROR_FAILED;
    }
 

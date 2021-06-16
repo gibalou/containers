@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "core/containers_common.h"
 #include "core/containers_logging.h"
 #include "core/containers_utils.h"
+#include "core/containers_metadata.h"
 #include "core/containers_io.h"
 
 static int print_info(VC_CONTAINER_T *ctx, bool b_reader);
@@ -187,6 +188,7 @@ static int parse_cmdline(unsigned int argc, char **argv)
 static VC_CONTAINER_STATUS_T generate_container(const char *psz_out,
     unsigned int tracks, VC_CONTAINER_ES_FORMAT_T *fmt,
     unsigned int pkts_num, VC_CONTAINER_PACKET_T *pkts,
+    unsigned int meta_num, VC_CONTAINER_METADATA_KEY_T *meta_keys, const char **meta_vals,
     bool b_info)
 {
    VC_CONTAINER_STATUS_T status;
@@ -202,6 +204,16 @@ static VC_CONTAINER_STATUS_T generate_container(const char *psz_out,
    {
       LOG_ERROR(0, "error opening file %s (%i)", psz_out, status);
       return status;
+   }
+
+   for(i = 0; i < meta_num; i++)
+   {
+      status = vc_container_control (ctx, VC_CONTAINER_CONTROL_METADATA_ADD, meta_keys[i], meta_vals[i]);
+      if(status != VC_CONTAINER_SUCCESS)
+      {
+         LOG_ERROR(0, "error adding meta %i (%i)", i, status);
+         goto error;
+      }
    }
 
    for(i = 0; i < tracks; i++)
@@ -236,6 +248,7 @@ static int verify_container(const char *psz_in,
     unsigned int tracks, VC_CONTAINER_ES_FORMAT_T *fmt,
     unsigned int pkts_num, VC_CONTAINER_PACKET_T *pkts,
     int64_t ts_offset_us,
+    unsigned int meta_num, VC_CONTAINER_METADATA_KEY_T *meta_keys, const char **meta_vals,
     bool b_info)
 {
    VC_CONTAINER_STATUS_T status;
@@ -317,6 +330,26 @@ static int verify_container(const char *psz_in,
       }
    }
 
+   /* Check metadata */
+   if(meta_num != ctx->meta_num)
+   {
+      LOG_ERROR(0, "metadata num mismatch %i/%i", meta_num, ctx->meta_num);
+      status = VC_CONTAINER_ERROR_CORRUPTED;
+      goto error;
+   }
+   for(i = 0; i < meta_num; i++)
+   {
+      if(meta_keys[i] != ctx->meta[i]->key ||
+         strcmp(meta_vals[i], ctx->meta[i]->value))
+      {
+         LOG_ERROR(0, "metadata %i mismatch %4.4s/%s -> %4.4s/%s", i,
+                   (char *)&meta_keys[i], meta_vals[i],
+                   (char *)&ctx->meta[i]->key, ctx->meta[i]->value);
+         status = VC_CONTAINER_ERROR_CORRUPTED;
+         goto error;
+      }
+   }
+
 error:
    if(b_info)
       print_info(ctx, true);
@@ -341,6 +374,15 @@ static int print_info(VC_CONTAINER_T *ctx, bool b_reader)
    {
       LOG_DEBUG(0, "track: %i, enabled: %i", i, ctx->tracks[i]->is_enabled);
       vc_container_print_es_format(VC_CONTAINER_LOG_DEBUG, ctx->tracks[i]->format);
+   }
+
+   for (i = 0; i < ctx->meta_num; ++i)
+   {
+      const char *name, *value;
+      name = vc_container_metadata_id_to_string(ctx->meta[i]->key);
+      value = ctx->meta[i]->value;
+      if(!name) continue;
+      LOG_INFO(0, "metadata(%i) : %s : %s", i, name, value);
    }
 
    LOG_DEBUG(0, "--------------------------");
@@ -423,6 +465,8 @@ static int test_mp4(void)
    int ret;
    DECLARE_ES_FORMATS(fmts, 2, VC_CONTAINER_ES_FORMAT_FLAG_FRAMED);
    VC_CONTAINER_PACKET_T pkts[100] = {{0}};
+   VC_CONTAINER_METADATA_KEY_T meta_keys[2] = {VC_CONTAINER_METADATA_KEY_ENCODEDBY, VC_CONTAINER_METADATA_KEY_COMMENTS};
+   const char *meta_vals[2] = {"Encoded By @test#", "&$£%Test"};
 
    /* Test muxing / demuxing of H264+AAC */
    set_video_format(fmts, VC_CONTAINER_CODEC_H264, VC_CONTAINER_VARIANT_H264_AVC1,
@@ -431,9 +475,9 @@ static int test_mp4(void)
 
    fill_packets(pkts, 100, fmts, 2, TS_OFFSET_US);
 
-   ret = generate_container("test-h264-aac.mp4", 2, fmts, 100, pkts, true);
+   ret = generate_container("test-h264-aac.mp4", 2, fmts, 100, pkts, 2, meta_keys, meta_vals, true);
    if (!ret)
-      ret = verify_container("test-h264-aac.mp4", 2, fmts, 100, pkts, TS_OFFSET_US, true);
+      ret = verify_container("test-h264-aac.mp4", 2, fmts, 100, pkts, TS_OFFSET_US, 2, meta_keys, meta_vals, true);
    if (ret)
       return ret;
 
@@ -442,9 +486,9 @@ static int test_mp4(void)
       1920, 1080, true);
    set_audio_format(fmts + 1, VC_CONTAINER_CODEC_OPUS, 2, 48000, true);
 
-   ret = generate_container("test-h265-opus.mp4", 2, fmts, 100, pkts, true);
+   ret = generate_container("test-h265-opus.mp4", 2, fmts, 100, pkts, 0, NULL, NULL, true);
    if (!ret)
-      ret = verify_container("test-h265-opus.mp4", 2, fmts, 100, pkts, TS_OFFSET_US, true);
+      ret = verify_container("test-h265-opus.mp4", 2, fmts, 100, pkts, TS_OFFSET_US, 0, NULL, NULL, true);
 
    return ret;
 }

@@ -86,6 +86,7 @@ typedef struct VC_CONTAINER_MODULE_T
    VC_CONTAINER_WRITER_EXTRAIO_T null;
 
    unsigned int current_track;
+   unsigned int current_meta;
 
    unsigned moov_size;
    int64_t mdat_offset;
@@ -137,6 +138,13 @@ static VC_CONTAINER_STATUS_T mp4_write_box_esds( VC_CONTAINER_T *p_ctx );
 static VC_CONTAINER_STATUS_T mp4_write_box_mvex( VC_CONTAINER_T *p_ctx );
 static VC_CONTAINER_STATUS_T mp4_write_box_trex( VC_CONTAINER_T *p_ctx );
 
+/* Metadata */
+static VC_CONTAINER_STATUS_T mp4_write_box_udta( VC_CONTAINER_T *p_ctx );
+static VC_CONTAINER_STATUS_T mp4_write_box_meta( VC_CONTAINER_T *p_ctx );
+static VC_CONTAINER_STATUS_T mp4_write_box_ilst( VC_CONTAINER_T *p_ctx );
+static VC_CONTAINER_STATUS_T mp4_write_box_metadata( VC_CONTAINER_T *p_ctx );
+static VC_CONTAINER_STATUS_T mp4_write_box_data( VC_CONTAINER_T *p_ctx );
+
 static struct {
   const MP4_BOX_TYPE_T type;
   VC_CONTAINER_STATUS_T (*pf_func)( VC_CONTAINER_T * );
@@ -171,6 +179,22 @@ static struct {
    {MP4_BOX_TYPE_ESDS, mp4_write_box_esds},
    {MP4_BOX_TYPE_MVEX, mp4_write_box_mvex},
    {MP4_BOX_TYPE_TREX, mp4_write_box_trex},
+
+   {MP4_BOX_TYPE_UDTA, mp4_write_box_udta},
+   {MP4_BOX_TYPE_META, mp4_write_box_meta},
+   {MP4_BOX_TYPE_ILST, mp4_write_box_ilst},
+   {MP4_BOX_TYPE_0xa9CMT, mp4_write_box_metadata},
+   {MP4_BOX_TYPE_0xa9DES, mp4_write_box_metadata},
+   {MP4_BOX_TYPE_0xa9ALB, mp4_write_box_metadata},
+   {MP4_BOX_TYPE_0xa9ART, mp4_write_box_metadata},
+   {MP4_BOX_TYPE_0xa9GEN, mp4_write_box_metadata},
+   {MP4_BOX_TYPE_0xa9NAM, mp4_write_box_metadata},
+   {MP4_BOX_TYPE_0xa9CPY, mp4_write_box_metadata},
+   {MP4_BOX_TYPE_0xa9DAY, mp4_write_box_metadata},
+   {MP4_BOX_TYPE_0xa9TRK, mp4_write_box_metadata},
+   {MP4_BOX_TYPE_0xa9TOO, mp4_write_box_metadata},
+   {MP4_BOX_TYPE_DATA, mp4_write_box_data},
+
    {MP4_BOX_TYPE_UNKNOWN, 0}
 };
 
@@ -266,9 +290,104 @@ static VC_CONTAINER_STATUS_T mp4_write_box_moov( VC_CONTAINER_T *p_ctx )
       if(status != VC_CONTAINER_SUCCESS) return status;
    }
 
+   if (p_ctx->meta_num)
+   {
+      status = mp4_write_box(p_ctx, MP4_BOX_TYPE_UDTA);
+   }
+
 #if 0
    status = mp4_write_box(p_ctx, MP4_BOX_TYPE_MVEX);
 #endif
+   return status;
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_write_box_udta( VC_CONTAINER_T *p_ctx )
+{
+   return mp4_write_box(p_ctx, MP4_BOX_TYPE_META);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_write_box_meta( VC_CONTAINER_T *p_ctx )
+{
+   VC_CONTAINER_STATUS_T status = VC_CONTAINER_SUCCESS;
+
+   WRITE_U8(p_ctx, 0, "version");
+   WRITE_U24(p_ctx, 0, "flags");
+   if(STREAM_STATUS(p_ctx) != VC_CONTAINER_SUCCESS) return STREAM_STATUS(p_ctx);
+
+   /* Write simple HDLR box */
+   LOG_FORMAT(p_ctx, "- Box hdlr, size: 33");
+   _WRITE_U32(p_ctx, 33);
+   _WRITE_FOURCC(p_ctx, MP4_BOX_TYPE_HDLR);
+   _WRITE_U32(p_ctx, 0);
+   _WRITE_U32(p_ctx, 0);
+   _WRITE_FOURCC(p_ctx, VC_FOURCC('m','d','i','r'));
+   _WRITE_FOURCC(p_ctx, VC_FOURCC('a','p','p','l'));
+   _WRITE_U32(p_ctx, 0);
+   _WRITE_U32(p_ctx, 0);
+   _WRITE_U8(p_ctx, 0);
+
+   if(status != VC_CONTAINER_SUCCESS) return status;
+   status = mp4_write_box(p_ctx, MP4_BOX_TYPE_ILST);
+
+   return status;
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_write_box_data( VC_CONTAINER_T *p_ctx )
+{
+   VC_CONTAINER_MODULE_T *module = p_ctx->priv->module;
+   VC_CONTAINER_METADATA_T *meta = p_ctx->meta[module->current_meta];
+
+   WRITE_U8(p_ctx, 0, "type");
+   WRITE_U24(p_ctx, 1 /* UTF8 */, "datatype");
+   WRITE_U16(p_ctx, 0, "country");
+   WRITE_U16(p_ctx, 0, "lang");
+   WRITE_STRING(p_ctx, meta->value, strlen(meta->value), "value");
+
+   return STREAM_STATUS(p_ctx);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_write_box_metadata( VC_CONTAINER_T *p_ctx )
+{
+   return mp4_write_box(p_ctx, MP4_BOX_TYPE_DATA);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_write_box_ilst( VC_CONTAINER_T *p_ctx )
+{
+   VC_CONTAINER_STATUS_T status = VC_CONTAINER_SUCCESS;
+   VC_CONTAINER_MODULE_T *module = p_ctx->priv->module;
+   unsigned int i;
+   uint32_t fourcc;
+
+   for(i = 0; i < p_ctx->meta_num; i++)
+   {
+      module->current_meta = i;
+
+      switch(p_ctx->meta[i]->key)
+      {
+      case VC_CONTAINER_METADATA_KEY_COMMENTS: fourcc = MP4_BOX_TYPE_0xa9CMT; break;
+      case VC_CONTAINER_METADATA_KEY_DESCRIPTION: fourcc = MP4_BOX_TYPE_0xa9DES; break;
+      case VC_CONTAINER_METADATA_KEY_ALBUM: fourcc = MP4_BOX_TYPE_0xa9ALB; break;
+      case VC_CONTAINER_METADATA_KEY_ARTIST: fourcc = MP4_BOX_TYPE_0xa9ART; break;
+      case VC_CONTAINER_METADATA_KEY_GENRE: fourcc = MP4_BOX_TYPE_0xa9GEN; break;
+      case VC_CONTAINER_METADATA_KEY_TITLE: fourcc = MP4_BOX_TYPE_0xa9NAM; break;
+      case VC_CONTAINER_METADATA_KEY_COPYRIGHT: fourcc = MP4_BOX_TYPE_0xa9CPY; break;
+      case VC_CONTAINER_METADATA_KEY_YEAR: fourcc = MP4_BOX_TYPE_0xa9DAY; break;
+      case VC_CONTAINER_METADATA_KEY_TRACK: fourcc = MP4_BOX_TYPE_0xa9TRK; break;
+      case VC_CONTAINER_METADATA_KEY_ENCODEDBY: fourcc = MP4_BOX_TYPE_0xa9TOO; break;
+      default: fourcc = 0; break;
+      }
+
+      if(!fourcc) continue;
+
+      status = mp4_write_box(p_ctx, fourcc);
+      if(status != VC_CONTAINER_SUCCESS) return status;
+   }
+
    return status;
 }
 
@@ -1079,7 +1198,7 @@ static VC_CONTAINER_STATUS_T mp4_write_box_vide_d263( VC_CONTAINER_T *p_ctx )
 {
    WRITE_U32(p_ctx, 8 + 7, "size");
    WRITE_FOURCC(p_ctx, VC_FOURCC('d','2','6','3'), "type");
-   WRITE_FOURCC(p_ctx, VC_FOURCC('B','R','C','M'), "vendor");
+   WRITE_FOURCC(p_ctx, VC_FOURCC('C','T','N','R'), "vendor");
    WRITE_U8(p_ctx, 0, "version");
    WRITE_U8(p_ctx, 10, "level");
    WRITE_U8(p_ctx, 0, "profile");
@@ -1134,7 +1253,7 @@ static VC_CONTAINER_STATUS_T mp4_write_box_soun_damr( VC_CONTAINER_T *p_ctx )
 {
    WRITE_U32(p_ctx, 8 + 8, "size");
    WRITE_FOURCC(p_ctx, VC_FOURCC('d','a','m','r'), "type");
-   WRITE_FOURCC(p_ctx, VC_FOURCC('B','R','C','M'), "vendor");
+   WRITE_FOURCC(p_ctx, VC_FOURCC('C','T','N','R'), "vendor");
    WRITE_U8(p_ctx, 0, "version");
    WRITE_U8(p_ctx, 0x80, "mode_set");
    WRITE_U8(p_ctx, 0, "mode_change_period");
@@ -1148,7 +1267,7 @@ static VC_CONTAINER_STATUS_T mp4_write_box_soun_dawp( VC_CONTAINER_T *p_ctx )
 {
    WRITE_U32(p_ctx, 8 + 5, "size");
    WRITE_FOURCC(p_ctx, VC_FOURCC('d','a','w','p'), "type");
-   WRITE_FOURCC(p_ctx, VC_FOURCC('B','R','C','M'), "vendor");
+   WRITE_FOURCC(p_ctx, VC_FOURCC('C','T','N','R'), "vendor");
    WRITE_U8(p_ctx, 0, "version");
 
    return STREAM_STATUS(p_ctx);
@@ -1159,7 +1278,7 @@ static VC_CONTAINER_STATUS_T mp4_write_box_soun_devc( VC_CONTAINER_T *p_ctx )
 {
    WRITE_U32(p_ctx, 8 + 6, "size");
    WRITE_FOURCC(p_ctx, VC_FOURCC('d','e','v','c'), "type");
-   WRITE_FOURCC(p_ctx, VC_FOURCC('B','R','C','M'), "vendor");
+   WRITE_FOURCC(p_ctx, VC_FOURCC('C','T','N','R'), "vendor");
    WRITE_U8(p_ctx, 0, "version");
    WRITE_U8(p_ctx, 1, "samples_per_frame");
 

@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "core/containers_loader.h"
 #include "core/containers_logging.h"
 #include "core/containers_utils.h"
+#include "core/containers_metadata.h"
 
 #define WRITER_SPACE_SAFETY_MARGIN (10*1024)
 #define PACKETIZER_BUFFER_SIZE (32*1024)
@@ -464,6 +465,19 @@ VC_CONTAINER_STATUS_T vc_container_control( VC_CONTAINER_T *p_ctx, VC_CONTAINER_
    va_list args;
 
    va_start( args, operation );
+
+   if(operation == VC_CONTAINER_CONTROL_METADATA_ADD)
+   {
+      VC_CONTAINER_METADATA_KEY_T key = va_arg(args, VC_CONTAINER_METADATA_KEY_T);
+      const char *value = va_arg(args, const char *);
+
+      unsigned size = strlen(value) + 1;
+      VC_CONTAINER_METADATA_T *meta = vc_container_metadata_append(p_ctx, key, size, &status);
+      if (!meta) return status;
+      meta->encoding = VC_CONTAINER_CHAR_ENCODING_UTF8;
+      memcpy(meta->value, value, size);
+      return VC_CONTAINER_SUCCESS;
+   }
 
    if(operation == VC_CONTAINER_CONTROL_ENCRYPT_TRACK)
    {

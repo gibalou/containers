@@ -90,7 +90,6 @@ int vc_container_format_cmp(VC_CONTAINER_ES_FORMAT_T *format1, VC_CONTAINER_ES_F
 
 int utf8_from_charset(const char *charset, char *out, unsigned int out_size,
                       const void *in, unsigned int in_size);
-const char *vc_container_metadata_id_to_string(VC_CONTAINER_METADATA_KEY_T key);
 
 unsigned int vc_container_es_format_to_waveformatex(VC_CONTAINER_ES_FORMAT_T *format,
                                                     uint8_t *buffer, unsigned int buffer_size);

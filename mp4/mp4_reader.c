@@ -40,6 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "core/containers_private.h"
 #include "core/containers_io_helpers.h"
 #include "core/containers_utils.h"
+#include "core/containers_metadata.h"
 #include "core/containers_logging.h"
 #include "mp4/mp4_common.h"
 #undef CONTAINER_HELPER_LOG_INDENT
@@ -66,6 +67,8 @@ Defines.
 
 #define MP4_MAX_SAMPLES_BATCH_SIZE (16*1024)
 
+#define MP4_MAX_METADATA_SIZE 512
+
 #define MP4_SKIP_U8(ctx,n)   (size -= 1, SKIP_U8(ctx,n))
 #define MP4_SKIP_U16(ctx,n)  (size -= 2, SKIP_U16(ctx,n))
 #define MP4_SKIP_U24(ctx,n)  (size -= 3, SKIP_U24(ctx,n))
@@ -80,6 +83,7 @@ Defines.
 #define MP4_SKIP_FOURCC(ctx,n)  (size -= 4, SKIP_FOURCC(ctx,n))
 #define MP4_READ_BYTES(ctx,buffer,sz) (size -= sz, READ_BYTES(ctx,buffer,sz))
 #define MP4_SKIP_BYTES(ctx,sz) (size -= sz, SKIP_BYTES(ctx,sz))
+#define MP4_READ_STRING(ctx,buffer, sz,n) (size -= sz, READ_STRING(ctx,buffer,sz,n))
 #define MP4_SKIP_STRING(ctx,sz,n) (size -= sz, SKIP_STRING(ctx,sz,n))
 
 /******************************************************************************
@@ -198,6 +202,20 @@ static VC_CONTAINER_STATUS_T mp4_read_box_tfhd( VC_CONTAINER_T *p_ctx, int64_t s
 static VC_CONTAINER_STATUS_T mp4_read_box_trun( VC_CONTAINER_T *p_ctx, int64_t size );
 static VC_CONTAINER_STATUS_T mp4_read_box_pssh( VC_CONTAINER_T *p_ctx, int64_t size );
 
+static VC_CONTAINER_STATUS_T mp4_read_box_udta( VC_CONTAINER_T *p_ctx, int64_t size );
+static VC_CONTAINER_STATUS_T mp4_read_box_meta( VC_CONTAINER_T *p_ctx, int64_t size );
+static VC_CONTAINER_STATUS_T mp4_read_box_ilst( VC_CONTAINER_T *p_ctx, int64_t size );
+static VC_CONTAINER_STATUS_T mp4_read_box_0xa9cmt( VC_CONTAINER_T *p_ctx, int64_t size );
+static VC_CONTAINER_STATUS_T mp4_read_box_0xa9too( VC_CONTAINER_T *p_ctx, int64_t size );
+static VC_CONTAINER_STATUS_T mp4_read_box_0xa9des( VC_CONTAINER_T *p_ctx, int64_t size );
+static VC_CONTAINER_STATUS_T mp4_read_box_0xa9alb( VC_CONTAINER_T *p_ctx, int64_t size );
+static VC_CONTAINER_STATUS_T mp4_read_box_0xa9art( VC_CONTAINER_T *p_ctx, int64_t size );
+static VC_CONTAINER_STATUS_T mp4_read_box_0xa9gen( VC_CONTAINER_T *p_ctx, int64_t size );
+static VC_CONTAINER_STATUS_T mp4_read_box_0xa9nam( VC_CONTAINER_T *p_ctx, int64_t size );
+static VC_CONTAINER_STATUS_T mp4_read_box_0xa9cpy( VC_CONTAINER_T *p_ctx, int64_t size );
+static VC_CONTAINER_STATUS_T mp4_read_box_0xa9day( VC_CONTAINER_T *p_ctx, int64_t size );
+static VC_CONTAINER_STATUS_T mp4_read_box_0xa9trk( VC_CONTAINER_T *p_ctx, int64_t size );
+
 static VC_CONTAINER_STATUS_T mp4_read_box_esds( VC_CONTAINER_T *p_ctx, int64_t size );
 static VC_CONTAINER_STATUS_T mp4_read_box_vide_avcC( VC_CONTAINER_T *p_ctx, int64_t size );
 static VC_CONTAINER_STATUS_T mp4_read_box_vide_hvcC( VC_CONTAINER_T *p_ctx, int64_t size );
@@ -263,6 +281,24 @@ static struct {
    {MP4_BOX_TYPE_SAIZ, mp4_read_box_saiz, MP4_BOX_TYPE_TRAK},
    {MP4_BOX_TYPE_SAIO, mp4_read_box_saio, MP4_BOX_TYPE_TRAK},
    {MP4_BOX_TYPE_SENC, mp4_read_box_senc, MP4_BOX_TYPE_TRAK},
+
+   /* Metadata */
+   {MP4_BOX_TYPE_UDTA, mp4_read_box_udta, MP4_BOX_TYPE_MOOV},
+   {MP4_BOX_TYPE_META, mp4_read_box_meta, MP4_BOX_TYPE_UDTA},
+   {MP4_BOX_TYPE_ILST, mp4_read_box_ilst, MP4_BOX_TYPE_META},
+   {MP4_BOX_TYPE_0xa9CMT, mp4_read_box_0xa9cmt, MP4_BOX_TYPE_ILST},
+   {MP4_BOX_TYPE_0xa9TOO, mp4_read_box_0xa9too, MP4_BOX_TYPE_ILST},
+   {MP4_BOX_TYPE_0xa9ENC, mp4_read_box_0xa9too, MP4_BOX_TYPE_ILST},
+   {MP4_BOX_TYPE_0xa9DES, mp4_read_box_0xa9des, MP4_BOX_TYPE_ILST},
+   {MP4_BOX_TYPE_DESC, mp4_read_box_0xa9des, MP4_BOX_TYPE_ILST},
+   {MP4_BOX_TYPE_0xa9ALB, mp4_read_box_0xa9alb, MP4_BOX_TYPE_ILST},
+   {MP4_BOX_TYPE_0xa9ART, mp4_read_box_0xa9art, MP4_BOX_TYPE_ILST},
+   {MP4_BOX_TYPE_0xa9AUT, mp4_read_box_0xa9art, MP4_BOX_TYPE_ILST},
+   {MP4_BOX_TYPE_0xa9GEN, mp4_read_box_0xa9gen, MP4_BOX_TYPE_ILST},
+   {MP4_BOX_TYPE_0xa9NAM, mp4_read_box_0xa9nam, MP4_BOX_TYPE_ILST},
+   {MP4_BOX_TYPE_0xa9CPY, mp4_read_box_0xa9cpy, MP4_BOX_TYPE_ILST},
+   {MP4_BOX_TYPE_0xa9DAY, mp4_read_box_0xa9day, MP4_BOX_TYPE_ILST},
+   {MP4_BOX_TYPE_0xa9TRK, mp4_read_box_0xa9trk, MP4_BOX_TYPE_ILST},
 
    /* Codec specific boxes */
    {MP4_BOX_TYPE_AVCC, mp4_read_box_vide_avcC, MP4_BOX_TYPE_VIDE},
@@ -653,7 +689,8 @@ static VC_CONTAINER_STATUS_T mp4_read_box_schm( VC_CONTAINER_T *p_ctx, int64_t s
    MP4_SKIP_U32(p_ctx, "scheme_version");
 
    if (size > 0 && (flags & 1)) {
-      MP4_SKIP_STRING(p_ctx, size, "uri");
+      int64_t string_size = size;
+      MP4_SKIP_STRING(p_ctx, string_size, "uri");
    }
 
    return STREAM_STATUS(p_ctx);
@@ -808,6 +845,146 @@ static VC_CONTAINER_STATUS_T mp4_read_box_trak( VC_CONTAINER_T *p_ctx, int64_t s
    module->current_track++;
 
    return status;
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_read_box_udta( VC_CONTAINER_T *p_ctx, int64_t size )
+{
+   return mp4_read_boxes( p_ctx, size, MP4_BOX_TYPE_UDTA);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_read_box_meta( VC_CONTAINER_T *p_ctx, int64_t size )
+{
+   uint32_t flags, version;
+
+   version = MP4_READ_U8(p_ctx, "version");
+   flags = MP4_READ_U24(p_ctx, "flags");
+   if(version || flags) return STREAM_STATUS(p_ctx);
+
+   return mp4_read_boxes( p_ctx, size, MP4_BOX_TYPE_META);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_read_box_ilst( VC_CONTAINER_T *p_ctx, int64_t size )
+{
+   return mp4_read_boxes( p_ctx, size, MP4_BOX_TYPE_ILST);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_read_box_metadata( VC_CONTAINER_T *p_ctx, MP4_BOX_TYPE_T type,
+   int64_t size )
+{
+   VC_CONTAINER_STATUS_T status;
+   VC_CONTAINER_METADATA_T *meta;
+   VC_CONTAINER_METADATA_KEY_T key;
+   MP4_BOX_TYPE_T box_type;
+   int64_t box_size, string_size;
+   unsigned int data_type;
+
+   status = mp4_read_box_header( p_ctx, size, &box_type, &box_size );
+   if(status != VC_CONTAINER_SUCCESS || box_type != MP4_BOX_TYPE_DATA) return status;
+   size = box_size;
+
+   if(MP4_READ_U8(p_ctx, "type")) return status;
+   data_type = MP4_READ_U24(p_ctx, "datatype");
+   if(data_type != 1 /* UTF8 */) return status;
+
+   MP4_SKIP_U16(p_ctx, "country");
+   MP4_SKIP_U16(p_ctx, "lang");
+
+   /* Sanity check size, truncate if necessary */
+   string_size = MIN(size, MP4_MAX_METADATA_SIZE);
+   switch(type)
+   {
+   case MP4_BOX_TYPE_0xa9CMT: key = VC_CONTAINER_METADATA_KEY_COMMENTS; break;
+   case MP4_BOX_TYPE_0xa9DES: key = VC_CONTAINER_METADATA_KEY_DESCRIPTION; break;
+   case MP4_BOX_TYPE_DESC:    key = VC_CONTAINER_METADATA_KEY_DESCRIPTION; break;
+   case MP4_BOX_TYPE_0xa9ALB: key = VC_CONTAINER_METADATA_KEY_ALBUM; break;
+   case MP4_BOX_TYPE_0xa9ART: key = VC_CONTAINER_METADATA_KEY_ARTIST; break;
+   case MP4_BOX_TYPE_0xa9AUT: key = VC_CONTAINER_METADATA_KEY_ARTIST; break;
+   case MP4_BOX_TYPE_0xa9GEN: key = VC_CONTAINER_METADATA_KEY_GENRE; break;
+   case MP4_BOX_TYPE_0xa9NAM: key = VC_CONTAINER_METADATA_KEY_TITLE; break;
+   case MP4_BOX_TYPE_0xa9CPY: key = VC_CONTAINER_METADATA_KEY_COPYRIGHT; break;
+   case MP4_BOX_TYPE_0xa9DAY: key = VC_CONTAINER_METADATA_KEY_YEAR; break;
+   case MP4_BOX_TYPE_0xa9TRK: key = VC_CONTAINER_METADATA_KEY_TRACK; break;
+   case MP4_BOX_TYPE_0xa9TOO: key = VC_CONTAINER_METADATA_KEY_ENCODEDBY; break;
+   case MP4_BOX_TYPE_0xa9ENC: key = VC_CONTAINER_METADATA_KEY_ENCODEDBY; break;
+   default: key = VC_CONTAINER_METADATA_KEY_ENCODEDBY; break;
+   }
+
+   if (key != VC_CONTAINER_METADATA_KEY_UNKNOWN &&
+       (meta = vc_container_metadata_append(p_ctx, key, string_size + 1, NULL)))
+   {
+      meta->encoding = VC_CONTAINER_CHAR_ENCODING_UTF8;
+      MP4_READ_STRING(p_ctx, meta->value, string_size, "value");
+   }
+   else
+   {
+      MP4_SKIP_STRING(p_ctx, string_size, "string");
+   }
+
+   return STREAM_STATUS(p_ctx);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_read_box_0xa9cmt( VC_CONTAINER_T *p_ctx, int64_t size )
+{
+   return mp4_read_box_metadata( p_ctx, MP4_BOX_TYPE_0xa9CMT, size);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_read_box_0xa9too( VC_CONTAINER_T *p_ctx, int64_t size )
+{
+   return mp4_read_box_metadata( p_ctx, MP4_BOX_TYPE_0xa9TOO, size);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_read_box_0xa9des( VC_CONTAINER_T *p_ctx, int64_t size )
+{
+   return mp4_read_box_metadata( p_ctx, MP4_BOX_TYPE_0xa9DES, size);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_read_box_0xa9alb( VC_CONTAINER_T *p_ctx, int64_t size )
+{
+   return mp4_read_box_metadata( p_ctx, MP4_BOX_TYPE_0xa9ALB, size);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_read_box_0xa9art( VC_CONTAINER_T *p_ctx, int64_t size )
+{
+   return mp4_read_box_metadata( p_ctx, MP4_BOX_TYPE_0xa9ART, size);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_read_box_0xa9gen( VC_CONTAINER_T *p_ctx, int64_t size )
+{
+   return mp4_read_box_metadata( p_ctx, MP4_BOX_TYPE_0xa9GEN, size);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_read_box_0xa9nam( VC_CONTAINER_T *p_ctx, int64_t size )
+{
+   return mp4_read_box_metadata( p_ctx, MP4_BOX_TYPE_0xa9NAM, size);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_read_box_0xa9cpy( VC_CONTAINER_T *p_ctx, int64_t size )
+{
+   return mp4_read_box_metadata( p_ctx, MP4_BOX_TYPE_0xa9CPY, size);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_read_box_0xa9day( VC_CONTAINER_T *p_ctx, int64_t size )
+{
+   return mp4_read_box_metadata( p_ctx, MP4_BOX_TYPE_0xa9DAY, size);
+}
+
+/*****************************************************************************/
+static VC_CONTAINER_STATUS_T mp4_read_box_0xa9trk( VC_CONTAINER_T *p_ctx, int64_t size )
+{
+   return mp4_read_box_metadata( p_ctx, MP4_BOX_TYPE_0xa9TRK, size);
 }
 
 /*****************************************************************************/
