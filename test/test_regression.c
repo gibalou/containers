@@ -189,7 +189,7 @@ static VC_CONTAINER_STATUS_T generate_container(const char *psz_out,
     unsigned int tracks, VC_CONTAINER_ES_FORMAT_T *fmt,
     unsigned int pkts_num, VC_CONTAINER_PACKET_T *pkts,
     unsigned int meta_num, VC_CONTAINER_METADATA_KEY_T *meta_keys, const char **meta_vals,
-    bool b_info)
+    bool b_rebase_timestamps, bool b_info)
 {
    VC_CONTAINER_STATUS_T status;
    VC_CONTAINER_T *ctx;
@@ -205,6 +205,9 @@ static VC_CONTAINER_STATUS_T generate_container(const char *psz_out,
       LOG_ERROR(0, "error opening file %s (%i)", psz_out, status);
       return status;
    }
+
+   if (!b_rebase_timestamps)
+      vc_container_control (ctx, VC_CONTAINER_CONTROL_REBASE_TIMESTAMPS, false);
 
    for(i = 0; i < meta_num; i++)
    {
@@ -475,7 +478,7 @@ static int test_mp4(void)
 
    fill_packets(pkts, 100, fmts, 2, TS_OFFSET_US);
 
-   ret = generate_container("test-h264-aac.mp4", 2, fmts, 100, pkts, 2, meta_keys, meta_vals, true);
+   ret = generate_container("test-h264-aac.mp4", 2, fmts, 100, pkts, 2, meta_keys, meta_vals, true, true);
    if (!ret)
       ret = verify_container("test-h264-aac.mp4", 2, fmts, 100, pkts, TS_OFFSET_US, 2, meta_keys, meta_vals, true);
    if (ret)
@@ -486,9 +489,9 @@ static int test_mp4(void)
       1920, 1080, true);
    set_audio_format(fmts + 1, VC_CONTAINER_CODEC_OPUS, 2, 48000, true);
 
-   ret = generate_container("test-h265-opus.mp4", 2, fmts, 100, pkts, 0, NULL, NULL, true);
+   ret = generate_container("test-h265-opus.mp4", 2, fmts, 100, pkts, 0, NULL, NULL, false, true);
    if (!ret)
-      ret = verify_container("test-h265-opus.mp4", 2, fmts, 100, pkts, TS_OFFSET_US, 0, NULL, NULL, true);
+      ret = verify_container("test-h265-opus.mp4", 2, fmts, 100, pkts, 0, 0, NULL, NULL, true);
 
    return ret;
 }

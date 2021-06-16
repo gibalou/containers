@@ -748,6 +748,12 @@ typedef enum
     *   arg2= VC_CONTAINER_FOURCC_T: codec variant to output */
    VC_CONTAINER_CONTROL_TRACK_PACKETIZE,
 
+   /** Request the container writer to rebase the timestamps of the media packets onto
+    * the zero origin.
+    * Arguments:\n
+    *   arg1= bool: enable or disable. Enabled by default. */
+   VC_CONTAINER_CONTROL_REBASE_TIMESTAMPS,
+
    /** Private user extensions must be above this number */
    VC_CONTAINER_CONTROL_USER_EXTENSIONS = 0x1000
 

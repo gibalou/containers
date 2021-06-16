@@ -100,6 +100,7 @@ typedef struct VC_CONTAINER_MODULE_T
    int64_t initial_sample_dts;
 
    int64_t earliest_pts;
+   bool rebase_timestamps;
 
 } VC_CONTAINER_MODULE_T;
 
@@ -1454,6 +1455,8 @@ static VC_CONTAINER_STATUS_T mp4_writer_close( VC_CONTAINER_T *p_ctx )
       mdat_size = 0;
    }
 
+   if (!module->rebase_timestamps) module->earliest_pts = 0;
+
    /* Write the moov box */
    status = mp4_write_box(p_ctx, MP4_BOX_TYPE_MOOV);
 
@@ -1581,6 +1584,10 @@ static VC_CONTAINER_STATUS_T mp4_writer_control( VC_CONTAINER_T *p_ctx, VC_CONTA
             (VC_CONTAINER_ES_FORMAT_T *)va_arg( args, VC_CONTAINER_ES_FORMAT_T * );
          return mp4_writer_add_track(p_ctx, p_format);
       }
+
+   case VC_CONTAINER_CONTROL_REBASE_TIMESTAMPS:
+      p_ctx->priv->module->rebase_timestamps = (bool)va_arg( args, bool );
+      return VC_CONTAINER_SUCCESS;
 
    default: return VC_CONTAINER_ERROR_UNSUPPORTED_OPERATION;
    }
@@ -1740,6 +1747,7 @@ VC_CONTAINER_STATUS_T mp4_writer_open( VC_CONTAINER_T *p_ctx )
 
    module->initial_sample_dts = VC_CONTAINER_TIME_UNKNOWN;
    module->earliest_pts = VC_CONTAINER_TIME_UNKNOWN;
+   module->rebase_timestamps = true;
    return VC_CONTAINER_SUCCESS;
 
  error:
